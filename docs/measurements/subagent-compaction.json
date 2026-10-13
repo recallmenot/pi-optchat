@@ -1,0 +1,44 @@
+{
+  "sourceCommit": "594287450ee37cd630f29ffbb4e6ba862f9259f4",
+  "piVersion": "1.0.2",
+  "recordedOn": "2026-10-13",
+  "kind": "offline transcript measurement; no language-model quality evidence",
+  "node": "v26.8.2",
+  "platform": "linux",
+  "window": 200000,
+  "resultCharacters": 9000,
+  "runs": [
+    {
+      "compactionEnabled": true,
+      "settings": {"enabled": true, "reserveTokens": 108000},
+      "scheduledTools": 120,
+      "completedTools": 120,
+      "maxEstimatedTokens": 91658,
+      "compactions": [{"reason": "threshold", "completedTools": 39, "tokensBefore": 93902}, {"reason": "threshold", "completedTools": 70, "tokensBefore": 93927}, {"reason": "threshold", "completedTools": 101, "tokensBefore": 93928}],
+      "snapshots": [
+        {"phase": "before-compaction-1", "completedTools": 39, "canonical": {"resultHeads": 39, "resultMiddles": 39}, "projectedSummary": false, "currentZoom": {"pages": 2, "firstContinuation": 25000, "characters": 40372, "resultHeads": 39, "resultMiddles": 0, "toolCalls": 39, "includesSummary": false}, "retainedEntriesZoom": {"pages": 2, "firstContinuation": 25000, "characters": 40372, "resultHeads": 39, "resultMiddles": 0, "toolCalls": 39, "includesSummary": false}},
+        {"phase": "after-compaction-1", "completedTools": 39, "canonical": {"resultHeads": 39, "resultMiddles": 39}, "projectedSummary": true, "currentZoom": {"pages": 1, "characters": 8271, "resultHeads": 8, "resultMiddles": 0, "toolCalls": 8, "includesSummary": false}, "previousContinuation": {"offset": 25000, "error": "Error: This transcript has 8271 characters; offset must be 0 to 8271."}, "retainedEntriesZoom": {"pages": 2, "firstContinuation": 25000, "characters": 40372, "resultHeads": 39, "resultMiddles": 0, "toolCalls": 39, "includesSummary": false}},
+        {"phase": "before-compaction-2", "completedTools": 70, "canonical": {"resultHeads": 70, "resultMiddles": 70}, "projectedSummary": true, "currentZoom": {"pages": 2, "firstContinuation": 25000, "characters": 40325, "resultHeads": 39, "resultMiddles": 0, "toolCalls": 39, "includesSummary": false}, "retainedEntriesZoom": {"pages": 3, "firstContinuation": 25000, "characters": 72426, "resultHeads": 70, "resultMiddles": 0, "toolCalls": 70, "includesSummary": false}},
+        {"phase": "after-compaction-2", "completedTools": 70, "canonical": {"resultHeads": 70, "resultMiddles": 70}, "projectedSummary": true, "currentZoom": {"pages": 1, "characters": 8271, "resultHeads": 8, "resultMiddles": 0, "toolCalls": 8, "includesSummary": false}, "previousContinuation": {"offset": 25000, "error": "Error: This transcript has 8271 characters; offset must be 0 to 8271."}, "retainedEntriesZoom": {"pages": 3, "firstContinuation": 25000, "characters": 72426, "resultHeads": 70, "resultMiddles": 0, "toolCalls": 70, "includesSummary": false}},
+        {"phase": "before-compaction-3", "completedTools": 101, "canonical": {"resultHeads": 101, "resultMiddles": 101}, "projectedSummary": true, "currentZoom": {"pages": 2, "firstContinuation": 25000, "characters": 40326, "resultHeads": 39, "resultMiddles": 0, "toolCalls": 39, "includesSummary": false}, "retainedEntriesZoom": {"pages": 5, "firstContinuation": 25000, "characters": 104481, "resultHeads": 101, "resultMiddles": 0, "toolCalls": 101, "includesSummary": false}},
+        {"phase": "after-compaction-3", "completedTools": 101, "canonical": {"resultHeads": 101, "resultMiddles": 101}, "projectedSummary": true, "currentZoom": {"pages": 1, "characters": 8272, "resultHeads": 8, "resultMiddles": 0, "toolCalls": 8, "includesSummary": false}, "previousContinuation": {"offset": 25000, "error": "Error: This transcript has 8272 characters; offset must be 0 to 8272."}, "retainedEntriesZoom": {"pages": 5, "firstContinuation": 25000, "characters": 104481, "resultHeads": 101, "resultMiddles": 0, "toolCalls": 101, "includesSummary": false}},
+        {"phase": "live-before-completion", "completedTools": 120, "canonical": {"resultHeads": 120, "resultMiddles": 120}, "projectedSummary": true, "currentZoom": {"pages": 2, "firstContinuation": 25000, "characters": 27937, "resultHeads": 27, "resultMiddles": 0, "toolCalls": 27, "includesSummary": false}, "retainedEntriesZoom": {"pages": 5, "firstContinuation": 25000, "characters": 124146, "resultHeads": 120, "resultMiddles": 0, "toolCalls": 120, "includesSummary": false}},
+        {"phase": "finished", "completedTools": 120, "canonical": {"resultHeads": 120, "resultMiddles": 120}, "projectedSummary": false, "currentZoom": {"pages": 5, "firstContinuation": 25000, "characters": 124214, "resultHeads": 120, "resultMiddles": 0, "toolCalls": 120, "includesSummary": false}, "retainedEntriesZoom": {"pages": 5, "firstContinuation": 25000, "characters": 124214, "resultHeads": 120, "resultMiddles": 0, "toolCalls": 120, "includesSummary": false}},
+        {"phase": "reloaded", "completedTools": 120, "canonical": {"resultHeads": 120, "resultMiddles": 120}, "projectedSummary": false, "currentZoom": {"pages": 5, "firstContinuation": 25000, "characters": 124214, "resultHeads": 120, "resultMiddles": 0, "toolCalls": 120, "includesSummary": false}, "retainedEntriesZoom": {"pages": 5, "firstContinuation": 25000, "characters": 124214, "resultHeads": 120, "resultMiddles": 0, "toolCalls": 120, "includesSummary": false}}
+      ]
+    },
+    {
+      "compactionEnabled": false,
+      "settings": {"enabled": false},
+      "scheduledTools": 120,
+      "completedTools": 84,
+      "maxEstimatedTokens": 201869,
+      "compactions": [],
+      "snapshots": [
+        {"phase": "live-before-hard-stop", "completedTools": 84, "canonical": {"resultHeads": 84, "resultMiddles": 84}, "projectedSummary": false, "currentZoom": {"pages": 4, "firstContinuation": 25000, "characters": 86902, "resultHeads": 84, "resultMiddles": 0, "toolCalls": 84, "includesSummary": false}, "retainedEntriesZoom": {"pages": 4, "firstContinuation": 25000, "characters": 86902, "resultHeads": 84, "resultMiddles": 0, "toolCalls": 84, "includesSummary": false}},
+        {"phase": "finished", "completedTools": 84, "canonical": {"resultHeads": 84, "resultMiddles": 84}, "projectedSummary": false, "currentZoom": {"pages": 4, "firstContinuation": 25000, "characters": 86982, "resultHeads": 84, "resultMiddles": 0, "toolCalls": 84, "includesSummary": false}, "retainedEntriesZoom": {"pages": 4, "firstContinuation": 25000, "characters": 86982, "resultHeads": 84, "resultMiddles": 0, "toolCalls": 84, "includesSummary": false}},
+        {"phase": "reloaded", "completedTools": 84, "canonical": {"resultHeads": 84, "resultMiddles": 84}, "projectedSummary": false, "currentZoom": {"pages": 4, "firstContinuation": 25000, "characters": 86982, "resultHeads": 84, "resultMiddles": 0, "toolCalls": 84, "includesSummary": false}, "retainedEntriesZoom": {"pages": 4, "firstContinuation": 25000, "characters": 86982, "resultHeads": 84, "resultMiddles": 0, "toolCalls": 84, "includesSummary": false}}
+      ]
+    }
+  ]
+}
