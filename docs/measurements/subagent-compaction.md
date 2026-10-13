@@ -1,6 +1,6 @@
 # Subagent compaction: transcript measurement for #176
 
-Measured on 2026-10-13 against upstream `594287450ee37cd630f29ffbb4e6ba862f9259f4`, with `@earendil-works/pi-coding-agent` 1.0.2. This branch contains an offline probe and findings; production code is unchanged. [Issue #176](https://github.com/jonaslsaa/pi-optchat/issues/176) asks about both transcript access and task quality. **Only transcript access has been measured here. Live model runs are deferred.**
+Measured on 2026-10-13 against upstream `594287450ee37cd630f29ffbb4e6ba862f9259f4`, with `@earendil-works/pi-coding-agent` 1.0.2. This document describes the offline probe; production code is unchanged. [Issue #176](https://github.com/jonaslsaa/pi-optchat/issues/176) asks about both transcript access and task quality. **The subsequent [OpenAI subscription pilot](subagent-compaction-openai.md) adds three paired live runs with Sol/xhigh parents, Sol/high subagents and Terra/medium memory summaries.** Its synthetic quality results and limitations are separate from this plumbing measurement.
 
 ## Finding
 
@@ -46,9 +46,9 @@ The clipping policy needs an explicit, separate decision. Retained entries alone
 
 **Recommendation:** retain the current compaction policy pending quality measurements, and propose the minimal retained-entry read-path fix. Do not build a summary tree or hybrid on the basis of this probe.
 
-## Deferred live comparison
+## Broader live comparison
 
-This is the protocol for a later experiment, not a completed benchmark. A live workload and blinded grading artifacts still need to be built.
+The [OpenAI pilot](subagent-compaction-openai.md) implements paired runs, condition-independent grading and parent recovery on one synthetic audit family. It confirms the value of retained-message live zoom, and exposes Pi's summary-input clipping and repeated-read costs. It does not satisfy the broader workload requirement below: realistic coding tasks, additional task families and budget-sensitivity measurements remain follow-up work.
 
 1. Freeze a substantial audit or coding task, its input files and an independent answer key before any runs. Require 100+ substantive tool calls, and size the evidence so a 200K context is actually crossed. Avoid a pure padding/recall task as the only quality workload. Record dataset hashes and the exact model ID, real context window, thinking settings, Pi version, tool limits and budget.
 2. Run paired trials on identical inputs with only subagent compaction changed: default on versus off as before #170. Keep prompts, tools, memory view and output limits identical. Use at least three task/seed pairs and alternate execution order. Allow the off arm to reach its normal hard stop; preserve partial work. Record actual input/output/cache tokens, latency, cost, compaction events, completed calls and final artifacts. Verify that the on arm actually compacts and that the task requires 100+ calls; an early hard stop in the off arm is a measured outcome, not a reason to discard the trial.
@@ -56,7 +56,7 @@ This is the protocol for a later experiment, not a completed benchmark. A live w
 4. Measure parent recovery separately with a fixed set of verification questions about early and middle-run evidence: exact commands, arguments, result details and corrections. Give the parent only the child report and named zoom. Use the same parent model, prompt and retrieval budget. Score answers against the frozen evidence, not the child's final claims. Include checkpoints while the child remains live after compaction as well as after completion/reload; finished-only checks miss the reproduced bug.
 5. Repeat the parent-recovery questions against a retained-entry candidate, with its text-clipping policy specified. Record missing-source failures separately from failures to retrieve available evidence. This distinguishes an access bug from a reasoning/compaction-quality problem.
 
-Only the live comparison can justify a claim about answer quality or a summary-tree/hybrid investment. The current measurement already establishes the narrower transcript-access defect.
+Broader live comparisons are still needed for general answer-quality claims or a summary-tree/hybrid investment. Both this probe and the OpenAI pilot establish the narrower transcript-access defect.
 
 ## Reproduce and validation
 

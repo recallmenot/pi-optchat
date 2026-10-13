@@ -1,0 +1,1593 @@
+{
+  "kind": "OpenAI-based synthetic compaction pilot",
+  "upstream": "594287450ee37cd630f29ffbb4e6ba862f9259f4",
+  "limitations": ["Three seeded variants of one synthetic workload; not a general coding benchmark.","Application guard at Pi-configured 272K window; not a measured OpenAI native context limit.","Parent live tests replay frozen snapshots; off live snapshot is captured at termination.","Candidate changes only message source, preserving existing per-step clipping.","Cost fields are SDK API-price estimates, not subscription charges."],
+  "pairs": [
+    {
+      "seed": 20261013,
+      "fixtureSha256": "d6d6c7742c494f75acbb55743df451a1e514bae79251ab2517bfd5760faf4e02",
+      "protocol": {
+        "kind": "OpenAI-based live pilot; synthetic release audit",
+        "seed": 20261013,
+        "fixtureSha256": "d6d6c7742c494f75acbb55743df451a1e514bae79251ab2517bfd5760faf4e02",
+        "models": {
+          "main": {
+            "provider": "openai",
+            "model": "gpt-6.1-sol",
+            "thinking": "xhigh"
+          },
+          "subagent": {
+            "provider": "openai",
+            "model": "gpt-6.1-sol",
+            "thinking": "high"
+          },
+          "memoryCompactor": {
+            "provider": "openai",
+            "model": "gpt-5.6-terra",
+            "thinking": "medium"
+          }
+        },
+        "piVersion": "1.0.2",
+        "node": "v26.8.2",
+        "configuredContextWindow": 272000,
+        "toolCallsRequired": 120,
+        "contextLimitPolicy": "Both arms stop before a request when Pi estimates context above its configured window. This is an experiment guard, not a claim about the OpenAI server limit.",
+        "task": "Audit a synthetic release fleet. There are 12 services and 120 chronological evidence packets, indexed 0 through 119.\nEach packet contains one authoritative DECISION_EVENT among routine request traces. Apply events in packet order; later updates replace only the fields they name. Request-trace diagnostics are not release decisions.\nA service is GO only if its approvedRelease equals its current release, errorPct <= 1.0, p95Ms <= 200, criticalVulns = 0, rollbackVerified is true, and freeze is false.\nOtherwise it is NO_GO. Use these blockingReasons exactly where applicable: approval_mismatch, error_budget, latency, security, rollback, freeze.\nRead all 120 packets using read_packet, at most six calls in one batch. Do not skip evidence. After each group of 12 packets, submit your current audit with checkpoint; mark complete=false until all packets are read. A checkpoint records your work but does not validate it or offer a way to read it back.\nAfter the final packet, submit complete=true with exactly one row for each service, including every required field and all blocking reasons. Then give a concise final report. Do not call other tools or request more work.",
+        "grader": "Exact field equality against a frozen answer key, blind to condition. No LLM judge.",
+        "started": "2026-10-13T10:20:27.177Z"
+      },
+      "completed": "2026-10-13T10:42:21.280Z",
+      "piSummaryToolResultSerialization": {
+        "packets": 120,
+        "receipts": 120,
+        "decisionEvents": 0
+      },
+      "order": ["on","off"],
+      "arms": [
+        {
+          "label": "76f360c9",
+          "compaction": true,
+          "state": "completed",
+          "readCalls": 151,
+          "uniquePackets": 113,
+          "repeatedReads": 31,
+          "successfulReadCalls": 144,
+          "failedReadCalls": 7,
+          "elapsedMs": 787974,
+          "successfulCompactions": 4,
+          "compactions": [
+            {"read":36,"reason":"threshold","success":true,"aborted":false},
+            {"read":60,"reason":"threshold","success":true,"aborted":false},
+            {"read":96,"reason":"threshold","success":true,"aborted":false},
+            {"read":108,"reason":"threshold","success":true,"aborted":false}
+          ],
+          "grade": {
+            "label": "76f360c9",
+            "correct": 100,
+            "total": 108,
+            "decisionsCorrect": 12,
+            "decisionsTotal": 12,
+            "completeClaim": false,
+            "extraRows": 0,
+            "duplicateRows": 0,
+            "mistakes": [
+              {"service":"service-05","field":"release","expected":"r13-5-a-next","actual":"r13-5-a"},
+              {"service":"service-05","field":"blockingReasons","expected":["approval_mismatch","error_budget","latency","freeze"],"actual":["error_budget","latency","freeze"]},
+              {"service":"service-08","field":"release","expected":"r13-8-a-next","actual":"r13-8-a"},
+              {"service":"service-08","field":"blockingReasons","expected":["approval_mismatch","latency"],"actual":["latency"]},
+              {"service":"service-09","field":"release","expected":"r13-9-a-next","actual":"r13-9-a"},
+              {"service":"service-09","field":"blockingReasons","expected":["approval_mismatch","latency","rollback"],"actual":["latency","rollback"]},
+              {"service":"service-11","field":"release","expected":"r13-11-a-next","actual":"r13-11-a"},
+              {"service":"service-11","field":"blockingReasons","expected":["error_budget"],"actual":["approval_mismatch","error_budget"]}
+            ]
+          },
+          "checkpointGrades": [
+            {"read":12,"completeClaim":false,"correct":12,"total":12,"mistakes":[]},
+            {"read":24,"completeClaim":false,"correct":24,"total":24,"mistakes":[]},
+            {"read":36,"completeClaim":false,"correct":36,"total":36,"mistakes":[]},
+            {"read":48,"completeClaim":false,"correct":48,"total":48,"mistakes":[]},
+            {"read":60,"completeClaim":false,"correct":59,"total":60,"mistakes":[{"service":"service-00","field":"criticalVulns","expected":1,"actual":0}]},
+            {"read":72,"completeClaim":false,"correct":71,"total":72,"mistakes":[{"service":"service-00","field":"criticalVulns","expected":1,"actual":0}]},
+            {"read":84,"completeClaim":false,"correct":83,"total":84,"mistakes":[{"service":"service-00","field":"criticalVulns","expected":1,"actual":0}]},
+            {"read":96,"completeClaim":false,"correct":84,"total":84,"mistakes":[]},
+            {"read":108,"completeClaim":false,"correct":84,"total":84,"mistakes":[]},
+            {"read":113,"completeClaim":false,"correct":84,"total":84,"mistakes":[]}
+          ],
+          "finalAudit": {
+            "complete": false,
+            "services": [
+              {"service":"service-00","release":"r13-0-a","approvedRelease":"r13-0-a","errorPct":0.8,"p95Ms":174,"criticalVulns":1,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["security","freeze"]},
+              {"service":"service-01","release":"r13-1-a","approvedRelease":"r13-1-a","errorPct":1,"p95Ms":165,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-02","release":"r13-2-a","approvedRelease":"r13-2-a-next","errorPct":0,"p95Ms":216,"criticalVulns":0,"rollbackVerified":false,"freeze":false,"decision":"NO_GO","blockingReasons":["approval_mismatch","latency","rollback"]},
+              {"service":"service-03","release":"r13-3-a-next","approvedRelease":"r13-3-a-next","errorPct":0.7,"p95Ms":136,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-04","release":"r13-4-a-next","approvedRelease":"r13-4-a-next","errorPct":1.3,"p95Ms":266,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","latency"]},
+              {"service":"service-05","release":"r13-5-a","approvedRelease":"r13-5-a","errorPct":1.3,"p95Ms":204,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","latency","freeze"]},
+              {"service":"service-06","release":"r13-6-a","approvedRelease":"r13-6-a-next","errorPct":0.7,"p95Ms":122,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["approval_mismatch"]},
+              {"service":"service-07","release":"r13-7-a","approvedRelease":"r13-7-a","errorPct":1.4,"p95Ms":134,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-08","release":"r13-8-a","approvedRelease":"r13-8-a","errorPct":0.8,"p95Ms":251,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]},
+              {"service":"service-09","release":"r13-9-a","approvedRelease":"r13-9-a","errorPct":0.6,"p95Ms":210,"criticalVulns":0,"rollbackVerified":false,"freeze":false,"decision":"NO_GO","blockingReasons":["latency","rollback"]},
+              {"service":"service-10","release":"r13-10-a","approvedRelease":"r13-10-a","errorPct":1.2,"p95Ms":152,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-11","release":"r13-11-a","approvedRelease":"r13-11-a-next","errorPct":1.1,"p95Ms":168,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["approval_mismatch","error_budget"]}
+            ]
+          },
+          "report": "**Overall: NO_GO — audit incomplete.**\n\nThe reader exhausted its evidence-read budget before returning packets **113–119**. I recorded the latest checkpoint with `complete=false`; I cannot honestly submit a complete audit.\n\nLatest recorded decisions through packet 112:\n\n| Service | Decision | Blocking reasons |\n|---|---|---|\n| service-00 | NO_GO | `security`, `freeze` |\n| service-01 | GO | — |\n| service-02 | NO_GO | `approval_mismatch`, `latency`, `rollback` |\n| service-03 | GO | — |\n| service-04 | NO_GO | `error_budget`, `latency` |\n| service-05 | NO_GO | `error_budget`, `latency`, `freeze` |\n| service-06 | NO_GO | `approval_mismatch` |\n| service-07 | NO_GO | `error_budget` |\n| service-08 | NO_GO | `latency` |\n| service-09 | NO_GO | `latency`, `rollback` |\n| service-10 | NO_GO | `error_budget` |\n| service-11 | NO_GO | `approval_mismatch`, `error_budget` |\n\nThese are **provisional checkpoint results, not certified final decisions**: the final seven events are unavailable, and some earlier evidence could not be independently verified from the compacted context.",
+          "warnings": [],
+          "usage": {
+            "requests": 41,
+            "input": 601137,
+            "cacheRead": 1732352,
+            "output": 18773,
+            "totalTokens": 2352262
+          },
+          "visibility": [
+            {"stage":"live","source":"current","packets":36,"receipts":6,"evidenceTags":0},
+            {"stage":"live","source":"retained","packets":36,"receipts":36,"evidenceTags":0},
+            {"stage":"finished","source":"current","packets":113,"receipts":113,"evidenceTags":0},
+            {"stage":"finished","source":"retained","packets":113,"receipts":113,"evidenceTags":0}
+          ]
+        },
+        {
+          "label": "fe9ed8f2",
+          "compaction": false,
+          "state": "failed",
+          "readCalls": 90,
+          "uniquePackets": 90,
+          "repeatedReads": 0,
+          "successfulReadCalls": 90,
+          "failedReadCalls": 0,
+          "elapsedMs": 335755,
+          "successfulCompactions": 0,
+          "compactions": [],
+          "grade": {
+            "label": "fe9ed8f2",
+            "correct": 77,
+            "total": 108,
+            "decisionsCorrect": 10,
+            "decisionsTotal": 12,
+            "completeClaim": false,
+            "extraRows": 0,
+            "duplicateRows": 0,
+            "mistakes": [
+              {"service":"service-00","field":"errorPct","expected":0.8,"actual":2.7},
+              {"service":"service-00","field":"blockingReasons","expected":["security","freeze"],"actual":["error_budget","security","freeze"]},
+              {"service":"service-01","field":"errorPct","expected":1,"actual":3.3},
+              {"service":"service-01","field":"decision","expected":"GO","actual":"NO_GO"},
+              {"service":"service-01","field":"blockingReasons","expected":[],"actual":["error_budget"]},
+              {"service":"service-02","field":"approvedRelease","expected":"r13-2-a-next","actual":"r13-2-a"},
+              {"service":"service-02","field":"errorPct","expected":0,"actual":0.4},
+              {"service":"service-02","field":"blockingReasons","expected":["approval_mismatch","latency","rollback"],"actual":["latency","rollback"]},
+              {"service":"service-03","field":"release","expected":"r13-3-a-next","actual":"r13-3-a"},
+              {"service":"service-03","field":"approvedRelease","expected":"r13-3-a-next","actual":"r13-3-a"},
+              {"service":"service-04","field":"release","expected":"r13-4-a-next","actual":"r13-4-a"},
+              {"service":"service-04","field":"approvedRelease","expected":"r13-4-a-next","actual":"r13-4-a"},
+              {"service":"service-04","field":"errorPct","expected":1.3,"actual":2.6},
+              {"service":"service-05","field":"release","expected":"r13-5-a-next","actual":"r13-5-a"},
+              {"service":"service-05","field":"blockingReasons","expected":["approval_mismatch","error_budget","latency","freeze"],"actual":["error_budget","latency","freeze"]},
+              {"service":"service-06","field":"approvedRelease","expected":"r13-6-a-next","actual":"r13-6-a"},
+              {"service":"service-06","field":"errorPct","expected":0.7,"actual":3.4},
+              {"service":"service-06","field":"blockingReasons","expected":["approval_mismatch"],"actual":["error_budget"]},
+              {"service":"service-07","field":"errorPct","expected":1.4,"actual":0},
+              {"service":"service-07","field":"decision","expected":"NO_GO","actual":"GO"},
+              {"service":"service-07","field":"blockingReasons","expected":["error_budget"],"actual":[]},
+              {"service":"service-08","field":"release","expected":"r13-8-a-next","actual":"r13-8-a"},
+              {"service":"service-08","field":"errorPct","expected":0.8,"actual":0.1},
+              {"service":"service-08","field":"blockingReasons","expected":["approval_mismatch","latency"],"actual":["latency"]},
+              {"service":"service-09","field":"release","expected":"r13-9-a-next","actual":"r13-9-a"},
+              {"service":"service-09","field":"errorPct","expected":0.6,"actual":0.4},
+              {"service":"service-09","field":"blockingReasons","expected":["approval_mismatch","latency","rollback"],"actual":["latency","rollback"]},
+              {"service":"service-10","field":"errorPct","expected":1.2,"actual":2.7},
+              {"service":"service-11","field":"release","expected":"r13-11-a-next","actual":"r13-11-a"},
+              {"service":"service-11","field":"approvedRelease","expected":"r13-11-a-next","actual":"r13-11-a"},
+              {"service":"service-11","field":"errorPct","expected":1.1,"actual":3.3}
+            ]
+          },
+          "checkpointGrades": [
+            {"read":12,"completeClaim":false,"correct":12,"total":12,"mistakes":[]},
+            {"read":24,"completeClaim":false,"correct":24,"total":24,"mistakes":[]},
+            {"read":36,"completeClaim":false,"correct":36,"total":36,"mistakes":[]},
+            {"read":48,"completeClaim":false,"correct":48,"total":48,"mistakes":[]},
+            {"read":60,"completeClaim":false,"correct":60,"total":60,"mistakes":[]},
+            {"read":72,"completeClaim":false,"correct":72,"total":72,"mistakes":[]},
+            {"read":84,"completeClaim":false,"correct":84,"total":84,"mistakes":[]}
+          ],
+          "finalAudit": {
+            "complete": false,
+            "services": [
+              {"service":"service-00","release":"r13-0-a","approvedRelease":"r13-0-a","errorPct":2.7,"p95Ms":174,"criticalVulns":1,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","security","freeze"]},
+              {"service":"service-01","release":"r13-1-a","approvedRelease":"r13-1-a","errorPct":3.3,"p95Ms":165,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-02","release":"r13-2-a","approvedRelease":"r13-2-a","errorPct":0.4,"p95Ms":216,"criticalVulns":0,"rollbackVerified":false,"freeze":false,"decision":"NO_GO","blockingReasons":["latency","rollback"]},
+              {"service":"service-03","release":"r13-3-a","approvedRelease":"r13-3-a","errorPct":0.7,"p95Ms":136,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-04","release":"r13-4-a","approvedRelease":"r13-4-a","errorPct":2.6,"p95Ms":266,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","latency"]},
+              {"service":"service-05","release":"r13-5-a","approvedRelease":"r13-5-a","errorPct":1.3,"p95Ms":204,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","latency","freeze"]},
+              {"service":"service-06","release":"r13-6-a","approvedRelease":"r13-6-a","errorPct":3.4,"p95Ms":122,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-07","release":"r13-7-a","approvedRelease":"r13-7-a","errorPct":0,"p95Ms":134,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-08","release":"r13-8-a","approvedRelease":"r13-8-a","errorPct":0.1,"p95Ms":251,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]},
+              {"service":"service-09","release":"r13-9-a","approvedRelease":"r13-9-a","errorPct":0.4,"p95Ms":210,"criticalVulns":0,"rollbackVerified":false,"freeze":false,"decision":"NO_GO","blockingReasons":["latency","rollback"]},
+              {"service":"service-10","release":"r13-10-a","approvedRelease":"r13-10-a","errorPct":2.7,"p95Ms":152,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-11","release":"r13-11-a","approvedRelease":"r13-11-a","errorPct":3.3,"p95Ms":168,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]}
+            ]
+          },
+          "report": "Task error: BENCHMARK_CONTEXT_LIMIT: Pi estimates 281872 tokens, above its configured 272000-token window.",
+          "warnings": [],
+          "usage": {
+            "requests": 22,
+            "input": 270411,
+            "cacheRead": 2800896,
+            "output": 7139,
+            "totalTokens": 3078446
+          },
+          "visibility": [
+            {"stage":"live","source":"current","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"live","source":"retained","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"finished","source":"current","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"finished","source":"retained","packets":90,"receipts":90,"evidenceTags":0}
+          ]
+        }
+      ],
+      "commonEvidenceCheckpoints": [
+        {
+          "packets": 12,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11],
+          "on": {
+            "correct": 12,
+            "total": 12,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 12,
+            "total": 12,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 24,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],
+          "on": {
+            "correct": 24,
+            "total": 24,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 24,
+            "total": 24,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 36,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35],
+          "on": {
+            "correct": 36,
+            "total": 36,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 36,
+            "total": 36,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 48,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47],
+          "on": {
+            "correct": 48,
+            "total": 48,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 48,
+            "total": 48,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 60,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59],
+          "on": {
+            "correct": 59,
+            "total": 60,
+            "mistakes": [
+              {"service":"service-00","field":"criticalVulns","expected":1,"actual":0}
+            ]
+          },
+          "off": {
+            "correct": 60,
+            "total": 60,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 72,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71],
+          "on": {
+            "correct": 71,
+            "total": 72,
+            "mistakes": [
+              {"service":"service-00","field":"criticalVulns","expected":1,"actual":0}
+            ]
+          },
+          "off": {
+            "correct": 72,
+            "total": 72,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 84,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83],
+          "on": {
+            "correct": 83,
+            "total": 84,
+            "mistakes": [
+              {"service":"service-00","field":"criticalVulns","expected":1,"actual":0}
+            ]
+          },
+          "off": {
+            "correct": 84,
+            "total": 84,
+            "mistakes": []
+          }
+        }
+      ],
+      "parentRecovery": [
+        {
+          "label": "76f360c9-live-current",
+          "stage": "live",
+          "candidate": false,
+          "packetsRead": 36,
+          "indices": [0,12,24,35],
+          "calls": 1,
+          "correct": 1,
+          "total": 8,
+          "accessible": 1,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":null,\"evidenceTag\":null},{\"packet\":12,\"receipt\":null,\"evidenceTag\":null},{\"packet\":24,\"receipt\":null,\"evidenceTag\":null},{\"packet\":35,\"receipt\":\"receipt-02c35644702c14f4\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-4214ddebc48591ce","evidenceTag":"evidence-b5f3596e12de911e"}},
+            {"packet":12,"actual":{"packet":12,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-7f766567f2c98f2d","evidenceTag":"evidence-d424475c5a948de9"}},
+            {"packet":24,"actual":{"packet":24,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-62240f82c266f463","evidenceTag":"evidence-74381726a6dae41e"}},
+            {"packet":35,"actual":{"packet":35,"receipt":"receipt-02c35644702c14f4","evidenceTag":null},"expected":{"receipt":"receipt-02c35644702c14f4","evidenceTag":"evidence-18b44c62d0cd3e3e"}}
+          ],
+          "attemptedPackets": 36
+        },
+        {
+          "label": "76f360c9-live-retained",
+          "stage": "live",
+          "candidate": true,
+          "packetsRead": 36,
+          "indices": [0,12,24,35],
+          "calls": 2,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-4214ddebc48591ce\",\"evidenceTag\":null},{\"packet\":12,\"receipt\":\"receipt-7f766567f2c98f2d\",\"evidenceTag\":null},{\"packet\":24,\"receipt\":\"receipt-62240f82c266f463\",\"evidenceTag\":null},{\"packet\":35,\"receipt\":\"receipt-02c35644702c14f4\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-4214ddebc48591ce","evidenceTag":null},"expected":{"receipt":"receipt-4214ddebc48591ce","evidenceTag":"evidence-b5f3596e12de911e"}},
+            {"packet":12,"actual":{"packet":12,"receipt":"receipt-7f766567f2c98f2d","evidenceTag":null},"expected":{"receipt":"receipt-7f766567f2c98f2d","evidenceTag":"evidence-d424475c5a948de9"}},
+            {"packet":24,"actual":{"packet":24,"receipt":"receipt-62240f82c266f463","evidenceTag":null},"expected":{"receipt":"receipt-62240f82c266f463","evidenceTag":"evidence-74381726a6dae41e"}},
+            {"packet":35,"actual":{"packet":35,"receipt":"receipt-02c35644702c14f4","evidenceTag":null},"expected":{"receipt":"receipt-02c35644702c14f4","evidenceTag":"evidence-18b44c62d0cd3e3e"}}
+          ],
+          "attemptedPackets": 36
+        },
+        {
+          "label": "76f360c9-finished-current",
+          "stage": "finished",
+          "candidate": false,
+          "packetsRead": 113,
+          "indices": [0,40,80,119],
+          "calls": 7,
+          "correct": 3,
+          "total": 8,
+          "accessible": 3,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-4214ddebc48591ce\",\"evidenceTag\":null},{\"packet\":40,\"receipt\":\"receipt-abfbd71e9caf681e\",\"evidenceTag\":null},{\"packet\":80,\"receipt\":\"receipt-f4714822f57a158c\",\"evidenceTag\":null},{\"packet\":119,\"receipt\":null,\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-4214ddebc48591ce","evidenceTag":null},"expected":{"receipt":"receipt-4214ddebc48591ce","evidenceTag":"evidence-b5f3596e12de911e"}},
+            {"packet":40,"actual":{"packet":40,"receipt":"receipt-abfbd71e9caf681e","evidenceTag":null},"expected":{"receipt":"receipt-abfbd71e9caf681e","evidenceTag":"evidence-cee74aab790cb4da"}},
+            {"packet":80,"actual":{"packet":80,"receipt":"receipt-f4714822f57a158c","evidenceTag":null},"expected":{"receipt":"receipt-f4714822f57a158c","evidenceTag":"evidence-2d28095a40f302d6"}},
+            {"packet":119,"actual":{"packet":119,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-153d07d690da4615","evidenceTag":"evidence-81d7b0fd603d246b"}}
+          ],
+          "attemptedPackets": 120
+        },
+        {
+          "label": "fe9ed8f2-live-current",
+          "stage": "live",
+          "candidate": false,
+          "packetsRead": 90,
+          "indices": [0,30,60,89],
+          "calls": 5,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-4214ddebc48591ce\",\"evidenceTag\":null},{\"packet\":30,\"receipt\":\"receipt-7956827f59634026\",\"evidenceTag\":null},{\"packet\":60,\"receipt\":\"receipt-4aa6d94e3507b421\",\"evidenceTag\":null},{\"packet\":89,\"receipt\":\"receipt-31ad26f544976e5a\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-4214ddebc48591ce","evidenceTag":null},"expected":{"receipt":"receipt-4214ddebc48591ce","evidenceTag":"evidence-b5f3596e12de911e"}},
+            {"packet":30,"actual":{"packet":30,"receipt":"receipt-7956827f59634026","evidenceTag":null},"expected":{"receipt":"receipt-7956827f59634026","evidenceTag":"evidence-70f1b62d2de54909"}},
+            {"packet":60,"actual":{"packet":60,"receipt":"receipt-4aa6d94e3507b421","evidenceTag":null},"expected":{"receipt":"receipt-4aa6d94e3507b421","evidenceTag":"evidence-67a9d0265e4bef1f"}},
+            {"packet":89,"actual":{"packet":89,"receipt":"receipt-31ad26f544976e5a","evidenceTag":null},"expected":{"receipt":"receipt-31ad26f544976e5a","evidenceTag":"evidence-be3543cccd43f62f"}}
+          ],
+          "attemptedPackets": 90
+        },
+        {
+          "label": "fe9ed8f2-finished-current",
+          "stage": "finished",
+          "candidate": false,
+          "packetsRead": 90,
+          "indices": [0,30,60,89],
+          "calls": 5,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-4214ddebc48591ce\",\"evidenceTag\":null},{\"packet\":30,\"receipt\":\"receipt-7956827f59634026\",\"evidenceTag\":null},{\"packet\":60,\"receipt\":\"receipt-4aa6d94e3507b421\",\"evidenceTag\":null},{\"packet\":89,\"receipt\":\"receipt-31ad26f544976e5a\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-4214ddebc48591ce","evidenceTag":null},"expected":{"receipt":"receipt-4214ddebc48591ce","evidenceTag":"evidence-b5f3596e12de911e"}},
+            {"packet":30,"actual":{"packet":30,"receipt":"receipt-7956827f59634026","evidenceTag":null},"expected":{"receipt":"receipt-7956827f59634026","evidenceTag":"evidence-70f1b62d2de54909"}},
+            {"packet":60,"actual":{"packet":60,"receipt":"receipt-4aa6d94e3507b421","evidenceTag":null},"expected":{"receipt":"receipt-4aa6d94e3507b421","evidenceTag":"evidence-67a9d0265e4bef1f"}},
+            {"packet":89,"actual":{"packet":89,"receipt":"receipt-31ad26f544976e5a","evidenceTag":null},"expected":{"receipt":"receipt-31ad26f544976e5a","evidenceTag":"evidence-be3543cccd43f62f"}}
+          ],
+          "attemptedPackets": 90
+        }
+      ],
+      "requests": [
+        {"role":"76f360c9:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1076,"output":135,"cacheRead":0,"cacheWrite":0,"reasoning":18,"totalTokens":1211,"cost":{"input":0.002152,"output":0.0016200000000000001,"cacheRead":0,"cacheWrite":0,"total":0.003772}},"stopReason":"stop"},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1020,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1124,"cost":{"input":0.0020399999999999997,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.00308}},"stopReason":"toolUse","ms":7688},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":19614,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":19718,"cost":{"input":0.039228,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.040268}},"stopReason":"toolUse","ms":7062},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18771,"output":730,"cacheRead":19456,"cacheWrite":0,"reasoning":0,"totalTokens":38957,"cost":{"input":0.037542,"output":0.007300000000000001,"cacheRead":0.0019456000000000002,"cacheWrite":0,"total":0.0467876}},"stopReason":"toolUse","ms":26725},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":827,"output":104,"cacheRead":38144,"cacheWrite":0,"reasoning":0,"totalTokens":39075,"cost":{"input":0.0016539999999999999,"output":0.0010400000000000001,"cacheRead":0.0038144000000000003,"cacheWrite":0,"total":0.006508400000000001}},"stopReason":"toolUse","ms":9779},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18786,"output":104,"cacheRead":38784,"cacheWrite":0,"reasoning":0,"totalTokens":57674,"cost":{"input":0.037572,"output":0.0010400000000000001,"cacheRead":0.0038784,"cacheWrite":0,"total":0.0424904}},"stopReason":"toolUse","ms":7371},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18647,"output":773,"cacheRead":57472,"cacheWrite":0,"reasoning":0,"totalTokens":76892,"cost":{"input":0.037294,"output":0.007730000000000001,"cacheRead":0.005747200000000001,"cacheWrite":0,"total":0.0507712}},"stopReason":"toolUse","ms":27418},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":874,"output":104,"cacheRead":76032,"cacheWrite":0,"reasoning":0,"totalTokens":77010,"cost":{"input":0.001748,"output":0.0010400000000000001,"cacheRead":0.007603200000000001,"cacheWrite":0,"total":0.010391200000000001}},"stopReason":"toolUse","ms":8071},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18692,"output":104,"cacheRead":76800,"cacheWrite":0,"reasoning":0,"totalTokens":95596,"cost":{"input":0.037384,"output":0.0010400000000000001,"cacheRead":0.007680000000000001,"cacheWrite":0,"total":0.046104}},"stopReason":"toolUse","ms":7420},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18753,"output":788,"cacheRead":95360,"cacheWrite":0,"reasoning":0,"totalTokens":114901,"cost":{"input":0.037506,"output":0.00788,"cacheRead":0.009536000000000001,"cacheWrite":0,"total":0.054922}},"stopReason":"toolUse","ms":26757},
+        {"role":"76f360c9:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21050,"output":832,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":21882,"cost":{"input":0.0421,"output":0.008320000000000001,"cacheRead":0,"cacheWrite":0,"total":0.05042}},"stopReason":"stop","ms":28622},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":20935,"output":125,"cacheRead":0,"cacheWrite":0,"reasoning":105,"totalTokens":21060,"cost":{"input":0.04187,"output":0.00125,"cacheRead":0,"cacheWrite":0,"total":0.04312}},"stopReason":"toolUse","ms":9555},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":3417,"output":139,"cacheRead":20736,"cacheWrite":0,"reasoning":33,"totalTokens":24292,"cost":{"input":0.006834,"output":0.0013900000000000002,"cacheRead":0.0020736,"cacheWrite":0,"total":0.0102976}},"stopReason":"toolUse","ms":8240},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18710,"output":104,"cacheRead":24064,"cacheWrite":0,"reasoning":0,"totalTokens":42878,"cost":{"input":0.037419999999999995,"output":0.0010400000000000001,"cacheRead":0.0024064000000000004,"cacheWrite":0,"total":0.0408664}},"stopReason":"toolUse","ms":7495},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18751,"output":104,"cacheRead":42624,"cacheWrite":0,"reasoning":0,"totalTokens":61479,"cost":{"input":0.037502,"output":0.0010400000000000001,"cacheRead":0.0042624,"cacheWrite":0,"total":0.0428044}},"stopReason":"toolUse","ms":37737},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18766,"output":812,"cacheRead":61184,"cacheWrite":0,"reasoning":0,"totalTokens":80762,"cost":{"input":0.037531999999999996,"output":0.00812,"cacheRead":0.0061184,"cacheWrite":0,"total":0.0517704}},"stopReason":"toolUse","ms":27553},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1032,"output":104,"cacheRead":79744,"cacheWrite":0,"reasoning":0,"totalTokens":80880,"cost":{"input":0.002064,"output":0.0010400000000000001,"cacheRead":0.007974400000000001,"cacheWrite":0,"total":0.011078400000000002}},"stopReason":"toolUse","ms":8560},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18739,"output":104,"cacheRead":80640,"cacheWrite":0,"reasoning":0,"totalTokens":99483,"cost":{"input":0.037478,"output":0.0010400000000000001,"cacheRead":0.008064,"cacheWrite":0,"total":0.046582}},"stopReason":"toolUse","ms":6576},
+        {"role":"76f360c9:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22563,"output":1705,"cacheRead":0,"cacheWrite":0,"reasoning":92,"totalTokens":24268,"cost":{"input":0.045126,"output":0.017050000000000003,"cacheRead":0,"cacheWrite":0,"total":0.062176}},"stopReason":"stop","ms":56336},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":20837,"output":957,"cacheRead":0,"cacheWrite":0,"reasoning":143,"totalTokens":21794,"cost":{"input":0.041673999999999996,"output":0.00957,"cacheRead":0,"cacheWrite":0,"total":0.051244}},"stopReason":"toolUse","ms":33110},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1072,"output":104,"cacheRead":20736,"cacheWrite":0,"reasoning":0,"totalTokens":21912,"cost":{"input":0.002144,"output":0.0010400000000000001,"cacheRead":0.0020736,"cacheWrite":0,"total":0.0052576}},"stopReason":"toolUse","ms":9327},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18706,"output":104,"cacheRead":21632,"cacheWrite":0,"reasoning":0,"totalTokens":40442,"cost":{"input":0.037412,"output":0.0010400000000000001,"cacheRead":0.0021632,"cacheWrite":0,"total":0.0406152}},"stopReason":"toolUse","ms":6715},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18704,"output":790,"cacheRead":40192,"cacheWrite":0,"reasoning":0,"totalTokens":59686,"cost":{"input":0.037408,"output":0.0079,"cacheRead":0.0040192000000000005,"cacheWrite":0,"total":0.0493272}},"stopReason":"toolUse","ms":26807},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":948,"output":104,"cacheRead":58752,"cacheWrite":0,"reasoning":0,"totalTokens":59804,"cost":{"input":0.001896,"output":0.0010400000000000001,"cacheRead":0.0058752000000000006,"cacheWrite":0,"total":0.008811200000000002}},"stopReason":"toolUse","ms":6978},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18692,"output":104,"cacheRead":59520,"cacheWrite":0,"reasoning":0,"totalTokens":78316,"cost":{"input":0.037384,"output":0.0010400000000000001,"cacheRead":0.005952000000000001,"cacheWrite":0,"total":0.044376}},"stopReason":"toolUse","ms":6960},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18704,"output":794,"cacheRead":78080,"cacheWrite":0,"reasoning":0,"totalTokens":97578,"cost":{"input":0.037408,"output":0.007940000000000001,"cacheRead":0.007808000000000001,"cacheWrite":0,"total":0.053156}},"stopReason":"toolUse","ms":27685},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":952,"output":104,"cacheRead":96640,"cacheWrite":0,"reasoning":0,"totalTokens":97696,"cost":{"input":0.0019039999999999999,"output":0.0010400000000000001,"cacheRead":0.009664,"cacheWrite":0,"total":0.012608000000000001}},"stopReason":"toolUse","ms":6971},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18780,"output":142,"cacheRead":97408,"cacheWrite":0,"reasoning":36,"totalTokens":116330,"cost":{"input":0.037559999999999996,"output":0.00142,"cacheRead":0.0097408,"cacheWrite":0,"total":0.048720799999999995}},"stopReason":"toolUse","ms":7694},
+        {"role":"76f360c9:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":27049,"output":2018,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":29067,"cost":{"input":0.054098,"output":0.02018,"cacheRead":0,"cacheWrite":0,"total":0.074278}},"stopReason":"stop","ms":64798},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21306,"output":168,"cacheRead":0,"cacheWrite":0,"reasoning":28,"totalTokens":21474,"cost":{"input":0.042612,"output":0.00168,"cacheRead":0,"cacheWrite":0,"total":0.044292}},"stopReason":"toolUse","ms":8394},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18846,"output":116,"cacheRead":21120,"cacheWrite":0,"reasoning":10,"totalTokens":40082,"cost":{"input":0.037691999999999996,"output":0.00116,"cacheRead":0.002112,"cacheWrite":0,"total":0.040964}},"stopReason":"toolUse","ms":11298},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18773,"output":104,"cacheRead":39808,"cacheWrite":0,"reasoning":0,"totalTokens":58685,"cost":{"input":0.037545999999999996,"output":0.0010400000000000001,"cacheRead":0.0039808000000000005,"cacheWrite":0,"total":0.042566799999999995}},"stopReason":"toolUse","ms":7625},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18644,"output":879,"cacheRead":58496,"cacheWrite":0,"reasoning":55,"totalTokens":78019,"cost":{"input":0.037288,"output":0.008790000000000001,"cacheRead":0.005849600000000001,"cacheWrite":0,"total":0.051927600000000004}},"stopReason":"toolUse","ms":30534},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":977,"output":104,"cacheRead":77056,"cacheWrite":0,"reasoning":0,"totalTokens":78137,"cost":{"input":0.001954,"output":0.0010400000000000001,"cacheRead":0.007705600000000001,"cacheWrite":0,"total":0.0106996}},"stopReason":"toolUse","ms":8328},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18674,"output":104,"cacheRead":77952,"cacheWrite":0,"reasoning":0,"totalTokens":96730,"cost":{"input":0.037348,"output":0.0010400000000000001,"cacheRead":0.0077952,"cacheWrite":0,"total":0.0461832}},"stopReason":"toolUse","ms":7179},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18683,"output":814,"cacheRead":96512,"cacheWrite":0,"reasoning":0,"totalTokens":116009,"cost":{"input":0.037365999999999996,"output":0.008140000000000001,"cacheRead":0.0096512,"cacheWrite":0,"total":0.055157199999999997}},"stopReason":"toolUse","ms":30029},
+        {"role":"76f360c9:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22300,"output":2511,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":24811,"cost":{"input":0.0446,"output":0.02511,"cacheRead":0,"cacheWrite":0,"total":0.06971}},"stopReason":"stop","ms":81162},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22575,"output":231,"cacheRead":0,"cacheWrite":0,"reasoning":125,"totalTokens":22806,"cost":{"input":0.045149999999999996,"output":0.00231,"cacheRead":0,"cacheWrite":0,"total":0.047459999999999995}},"stopReason":"toolUse","ms":11682},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18895,"output":122,"cacheRead":22400,"cacheWrite":0,"reasoning":16,"totalTokens":41417,"cost":{"input":0.03779,"output":0.0012200000000000002,"cacheRead":0.0022400000000000002,"cacheWrite":0,"total":0.041249999999999995}},"stopReason":"toolUse","ms":8462},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":15592,"output":301,"cacheRead":41216,"cacheWrite":0,"reasoning":156,"totalTokens":57109,"cost":{"input":0.031184,"output":0.00301,"cacheRead":0.0041216000000000004,"cacheWrite":0,"total":0.038315600000000005}},"stopReason":"toolUse","ms":15062},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":491,"output":869,"cacheRead":56704,"cacheWrite":0,"reasoning":60,"totalTokens":58064,"cost":{"input":0.000982,"output":0.008690000000000002,"cacheRead":0.005670400000000001,"cacheWrite":0,"total":0.015342400000000003}},"stopReason":"toolUse","ms":29529},
+        {"role":"76f360c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":990,"output":285,"cacheRead":57088,"cacheWrite":0,"reasoning":0,"totalTokens":58363,"cost":{"input":0.00198,"output":0.00285,"cacheRead":0.005708800000000001,"cacheWrite":0,"total":0.010538800000000001}},"stopReason":"stop","ms":15918},
+        {"role":"fe9ed8f2:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1076,"output":127,"cacheRead":0,"cacheWrite":0,"reasoning":9,"totalTokens":1203,"cost":{"input":0.002152,"output":0.001524,"cacheRead":0,"cacheWrite":0,"total":0.0036759999999999996}},"stopReason":"stop"},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1022,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1126,"cost":{"input":0.002044,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.003084}},"stopReason":"toolUse","ms":6391},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":19616,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":19720,"cost":{"input":0.039231999999999996,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.040271999999999995}},"stopReason":"toolUse","ms":6644},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18773,"output":754,"cacheRead":19456,"cacheWrite":0,"reasoning":0,"totalTokens":38983,"cost":{"input":0.037545999999999996,"output":0.007540000000000001,"cacheRead":0.0019456000000000002,"cacheWrite":0,"total":0.04703159999999999}},"stopReason":"toolUse","ms":27408},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":853,"output":104,"cacheRead":38144,"cacheWrite":0,"reasoning":0,"totalTokens":39101,"cost":{"input":0.0017059999999999998,"output":0.0010400000000000001,"cacheRead":0.0038144000000000003,"cacheWrite":0,"total":0.006560400000000001}},"stopReason":"toolUse","ms":6761},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18684,"output":104,"cacheRead":38912,"cacheWrite":0,"reasoning":0,"totalTokens":57700,"cost":{"input":0.037368,"output":0.0010400000000000001,"cacheRead":0.0038912000000000005,"cacheWrite":0,"total":0.042299199999999995}},"stopReason":"toolUse","ms":7306},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18673,"output":797,"cacheRead":57472,"cacheWrite":0,"reasoning":0,"totalTokens":76942,"cost":{"input":0.037346,"output":0.007970000000000001,"cacheRead":0.005747200000000001,"cacheWrite":0,"total":0.051063199999999996}},"stopReason":"toolUse","ms":30685},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":924,"output":104,"cacheRead":76032,"cacheWrite":0,"reasoning":0,"totalTokens":77060,"cost":{"input":0.0018479999999999998,"output":0.0010400000000000001,"cacheRead":0.007603200000000001,"cacheWrite":0,"total":0.010491200000000001}},"stopReason":"toolUse","ms":8215},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18742,"output":104,"cacheRead":76800,"cacheWrite":0,"reasoning":0,"totalTokens":95646,"cost":{"input":0.037483999999999996,"output":0.0010400000000000001,"cacheRead":0.007680000000000001,"cacheWrite":0,"total":0.046203999999999995}},"stopReason":"toolUse","ms":8360},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18803,"output":812,"cacheRead":95360,"cacheWrite":0,"reasoning":0,"totalTokens":114975,"cost":{"input":0.037606,"output":0.00812,"cacheRead":0.009536000000000001,"cacheWrite":0,"total":0.055262000000000006}},"stopReason":"toolUse","ms":29314},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":941,"output":104,"cacheRead":114048,"cacheWrite":0,"reasoning":0,"totalTokens":115093,"cost":{"input":0.001882,"output":0.0010400000000000001,"cacheRead":0.011404800000000001,"cacheWrite":0,"total":0.0143268}},"stopReason":"toolUse","ms":8220},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18774,"output":104,"cacheRead":114816,"cacheWrite":0,"reasoning":0,"totalTokens":133694,"cost":{"input":0.037548,"output":0.0010400000000000001,"cacheRead":0.011481600000000002,"cacheWrite":0,"total":0.0500696}},"stopReason":"toolUse","ms":7197},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18661,"output":812,"cacheRead":133504,"cacheWrite":0,"reasoning":0,"totalTokens":152977,"cost":{"input":0.037322,"output":0.00812,"cacheRead":0.013350400000000002,"cacheWrite":0,"total":0.05879240000000001}},"stopReason":"toolUse","ms":29769},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":927,"output":104,"cacheRead":152064,"cacheWrite":0,"reasoning":0,"totalTokens":153095,"cost":{"input":0.001854,"output":0.0010400000000000001,"cacheRead":0.015206400000000002,"cacheWrite":0,"total":0.018100400000000003}},"stopReason":"toolUse","ms":8712},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18762,"output":104,"cacheRead":152832,"cacheWrite":0,"reasoning":0,"totalTokens":171698,"cost":{"input":0.037523999999999995,"output":0.0010400000000000001,"cacheRead":0.015283200000000002,"cacheWrite":0,"total":0.0538472}},"stopReason":"toolUse","ms":9731},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18761,"output":814,"cacheRead":171392,"cacheWrite":0,"reasoning":0,"totalTokens":190967,"cost":{"input":0.037522,"output":0.008140000000000001,"cacheRead":0.0171392,"cacheWrite":0,"total":0.0628012}},"stopReason":"toolUse","ms":29133},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1029,"output":104,"cacheRead":189952,"cacheWrite":0,"reasoning":0,"totalTokens":191085,"cost":{"input":0.002058,"output":0.0010400000000000001,"cacheRead":0.0189952,"cacheWrite":0,"total":0.0220932}},"stopReason":"toolUse","ms":7885},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18663,"output":104,"cacheRead":190848,"cacheWrite":0,"reasoning":0,"totalTokens":209615,"cost":{"input":0.037326,"output":0.0010400000000000001,"cacheRead":0.019084800000000002,"cacheWrite":0,"total":0.057450799999999996}},"stopReason":"toolUse","ms":10866},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18661,"output":794,"cacheRead":209408,"cacheWrite":0,"reasoning":0,"totalTokens":228863,"cost":{"input":0.037322,"output":0.007940000000000001,"cacheRead":0.020940800000000002,"cacheWrite":0,"total":0.0662028}},"stopReason":"toolUse","ms":28498},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":909,"output":104,"cacheRead":227968,"cacheWrite":0,"reasoning":0,"totalTokens":228981,"cost":{"input":0.001818,"output":0.0010400000000000001,"cacheRead":0.022796800000000002,"cacheWrite":0,"total":0.025654800000000002}},"stopReason":"toolUse","ms":9393},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18653,"output":104,"cacheRead":228736,"cacheWrite":0,"reasoning":0,"totalTokens":247493,"cost":{"input":0.037306,"output":0.0010400000000000001,"cacheRead":0.0228736,"cacheWrite":0,"total":0.0612196}},"stopReason":"toolUse","ms":10945},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18665,"output":796,"cacheRead":247296,"cacheWrite":0,"reasoning":0,"totalTokens":266757,"cost":{"input":0.037329999999999995,"output":0.00796,"cacheRead":0.0247296,"cacheWrite":0,"total":0.0700196}},"stopReason":"toolUse","ms":30343},
+        {"role":"fe9ed8f2:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":915,"output":104,"cacheRead":265856,"cacheWrite":0,"reasoning":0,"totalTokens":266875,"cost":{"input":0.0018299999999999998,"output":0.0010400000000000001,"cacheRead":0.0265856,"cacheWrite":0,"total":0.029455600000000002}},"stopReason":"toolUse","ms":8471},
+        {"role":"76f360c9-live-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":124,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1206,"cost":{"input":0.0021639999999999997,"output":0.001488,"cacheRead":0,"cacheWrite":0,"total":0.003652}},"stopReason":"stop"},
+        {"role":"76f360c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":915,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":936,"cost":{"input":0.0018299999999999998,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.0020399999999999997}},"stopReason":"toolUse","ms":4223},
+        {"role":"76f360c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":3043,"output":322,"cacheRead":0,"cacheWrite":0,"reasoning":245,"totalTokens":3365,"cost":{"input":0.006085999999999999,"output":0.00322,"cacheRead":0,"cacheWrite":0,"total":0.009306}},"stopReason":"stop","ms":13952},
+        {"role":"76f360c9-live-retained:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":152,"cacheRead":0,"cacheWrite":0,"reasoning":24,"totalTokens":1234,"cost":{"input":0.0021639999999999997,"output":0.001824,"cacheRead":0,"cacheWrite":0,"total":0.003988}},"stopReason":"stop"},
+        {"role":"76f360c9-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":917,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":938,"cost":{"input":0.001834,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.002044}},"stopReason":"toolUse","ms":6002},
+        {"role":"76f360c9-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8088,"output":31,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":8119,"cost":{"input":0.016176,"output":0.00031,"cacheRead":0,"cacheWrite":0,"total":0.016486}},"stopReason":"toolUse","ms":4471},
+        {"role":"76f360c9-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":4957,"output":254,"cacheRead":7936,"cacheWrite":0,"reasoning":148,"totalTokens":13147,"cost":{"input":0.009914,"output":0.00254,"cacheRead":0.0007936000000000001,"cacheWrite":0,"total":0.0132476}},"stopReason":"stop","ms":11781},
+        {"role":"76f360c9-finished-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1106,"output":129,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1235,"cost":{"input":0.002212,"output":0.0015480000000000001,"cacheRead":0,"cacheWrite":0,"total":0.0037600000000000003}},"stopReason":"stop"},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":920,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":941,"cost":{"input":0.0018399999999999998,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.0020499999999999997}},"stopReason":"toolUse","ms":5489},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8091,"output":112,"cacheRead":0,"cacheWrite":0,"reasoning":79,"totalTokens":8203,"cost":{"input":0.016182,"output":0.0011200000000000001,"cacheRead":0,"cacheWrite":0,"total":0.017301999999999998}},"stopReason":"toolUse","ms":8914},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7485,"output":31,"cacheRead":7936,"cacheWrite":0,"reasoning":0,"totalTokens":15452,"cost":{"input":0.014969999999999999,"output":0.00031,"cacheRead":0.0007936000000000001,"cacheWrite":0,"total":0.016073599999999997}},"stopReason":"toolUse","ms":6822},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7510,"output":31,"cacheRead":15232,"cacheWrite":0,"reasoning":0,"totalTokens":22773,"cost":{"input":0.015019999999999999,"output":0.00031,"cacheRead":0.0015232000000000002,"cacheWrite":0,"total":0.0168532}},"stopReason":"toolUse","ms":6165},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7363,"output":77,"cacheRead":22656,"cacheWrite":0,"reasoning":44,"totalTokens":30096,"cost":{"input":0.014726,"output":0.0007700000000000001,"cacheRead":0.0022656,"cacheWrite":0,"total":0.0177616}},"stopReason":"toolUse","ms":8539},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7526,"output":31,"cacheRead":29824,"cacheWrite":0,"reasoning":0,"totalTokens":37381,"cost":{"input":0.015052,"output":0.00031,"cacheRead":0.0029824,"cacheWrite":0,"total":0.0183444}},"stopReason":"toolUse","ms":5815},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7416,"output":31,"cacheRead":37248,"cacheWrite":0,"reasoning":0,"totalTokens":44695,"cost":{"input":0.014832,"output":0.00031,"cacheRead":0.0037248000000000003,"cacheWrite":0,"total":0.0188668}},"stopReason":"toolUse","ms":4701},
+        {"role":"76f360c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":3731,"output":156,"cacheRead":44544,"cacheWrite":0,"reasoning":63,"totalTokens":48431,"cost":{"input":0.007462,"output":0.0015600000000000002,"cacheRead":0.004454400000000001,"cacheWrite":0,"total":0.013476400000000001}},"stopReason":"stop","ms":8501},
+        {"role":"fe9ed8f2-live-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":120,"cacheRead":0,"cacheWrite":0,"reasoning":26,"totalTokens":1202,"cost":{"input":0.0021639999999999997,"output":0.00144,"cacheRead":0,"cacheWrite":0,"total":0.0036039999999999996}},"stopReason":"stop"},
+        {"role":"fe9ed8f2-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":882,"output":20,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":902,"cost":{"input":0.001764,"output":0.0002,"cacheRead":0,"cacheWrite":0,"total":0.001964}},"stopReason":"toolUse","ms":4513},
+        {"role":"fe9ed8f2-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8050,"output":115,"cacheRead":0,"cacheWrite":0,"reasoning":83,"totalTokens":8165,"cost":{"input":0.0161,"output":0.0011500000000000002,"cacheRead":0,"cacheWrite":0,"total":0.01725}},"stopReason":"toolUse","ms":8533},
+        {"role":"fe9ed8f2-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7461,"output":30,"cacheRead":7936,"cacheWrite":0,"reasoning":0,"totalTokens":15427,"cost":{"input":0.014922,"output":0.00030000000000000003,"cacheRead":0.0007936000000000001,"cacheWrite":0,"total":0.016015599999999998}},"stopReason":"toolUse","ms":5147},
+        {"role":"fe9ed8f2-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7479,"output":30,"cacheRead":15232,"cacheWrite":0,"reasoning":0,"totalTokens":22741,"cost":{"input":0.014957999999999999,"output":0.00030000000000000003,"cacheRead":0.0015232000000000002,"cacheWrite":0,"total":0.0167812}},"stopReason":"toolUse","ms":4197},
+        {"role":"fe9ed8f2-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7452,"output":30,"cacheRead":22528,"cacheWrite":0,"reasoning":0,"totalTokens":30010,"cost":{"input":0.014903999999999999,"output":0.00030000000000000003,"cacheRead":0.0022528,"cacheWrite":0,"total":0.017456799999999998}},"stopReason":"toolUse","ms":6719},
+        {"role":"fe9ed8f2-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":709,"output":177,"cacheRead":29824,"cacheWrite":0,"reasoning":73,"totalTokens":30710,"cost":{"input":0.001418,"output":0.00177,"cacheRead":0.0029824,"cacheWrite":0,"total":0.0061703999999999995}},"stopReason":"stop","ms":9309},
+        {"role":"fe9ed8f2-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":821,"output":20,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":841,"cost":{"input":0.001642,"output":0.0002,"cacheRead":0,"cacheWrite":0,"total":0.001842}},"stopReason":"toolUse","ms":4456},
+        {"role":"fe9ed8f2-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7989,"output":107,"cacheRead":0,"cacheWrite":0,"reasoning":75,"totalTokens":8096,"cost":{"input":0.015978,"output":0.00107,"cacheRead":0,"cacheWrite":0,"total":0.017048}},"stopReason":"toolUse","ms":6953},
+        {"role":"fe9ed8f2-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7520,"output":30,"cacheRead":7808,"cacheWrite":0,"reasoning":0,"totalTokens":15358,"cost":{"input":0.01504,"output":0.00030000000000000003,"cacheRead":0.0007808000000000001,"cacheWrite":0,"total":0.0161208}},"stopReason":"toolUse","ms":3919},
+        {"role":"fe9ed8f2-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":22642,"output":30,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":22672,"cost":{"input":0.045284,"output":0.00030000000000000003,"cacheRead":0,"cacheWrite":0,"total":0.045584}},"stopReason":"toolUse","ms":3700},
+        {"role":"fe9ed8f2-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7383,"output":30,"cacheRead":22528,"cacheWrite":0,"reasoning":0,"totalTokens":29941,"cost":{"input":0.014766,"output":0.00030000000000000003,"cacheRead":0.0022528,"cacheWrite":0,"total":0.0173188}},"stopReason":"toolUse","ms":3931},
+        {"role":"fe9ed8f2-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":640,"output":102,"cacheRead":29824,"cacheWrite":0,"reasoning":0,"totalTokens":30566,"cost":{"input":0.0012799999999999999,"output":0.00102,"cacheRead":0.0029824,"cacheWrite":0,"total":0.0052824}},"stopReason":"stop","ms":8190}
+      ],
+      "totals": {
+        "input": 1025042,
+        "output": 28559,
+        "cacheRead": 4834304,
+        "cacheWrite": 0,
+        "totalTokens": 5887905,
+        "cost": {
+          "input": 2.0500840000000005,
+          "output": 0.2871640000000001,
+          "cacheRead": 0.4834304000000001,
+          "cacheWrite": 0,
+          "total": 2.8206784000000003
+        }
+      }
+    },
+    {
+      "seed": 20261014,
+      "fixtureSha256": "3d4977c57e94846a1411bc1aad43929acd23bc3ee6847b5ac9f49548d2766cfa",
+      "protocol": {
+        "kind": "OpenAI-based live pilot; synthetic release audit",
+        "seed": 20261014,
+        "fixtureSha256": "3d4977c57e94846a1411bc1aad43929acd23bc3ee6847b5ac9f49548d2766cfa",
+        "models": {
+          "main": {
+            "provider": "openai",
+            "model": "gpt-6.1-sol",
+            "thinking": "xhigh"
+          },
+          "subagent": {
+            "provider": "openai",
+            "model": "gpt-6.1-sol",
+            "thinking": "high"
+          },
+          "memoryCompactor": {
+            "provider": "openai",
+            "model": "gpt-5.6-terra",
+            "thinking": "medium"
+          }
+        },
+        "piVersion": "1.0.2",
+        "node": "v26.8.2",
+        "configuredContextWindow": 272000,
+        "toolCallsRequired": 120,
+        "contextLimitPolicy": "Both arms stop before a request when Pi estimates context above its configured window. This is an experiment guard, not a claim about the OpenAI server limit.",
+        "task": "Audit a synthetic release fleet. There are 12 services and 120 chronological evidence packets, indexed 0 through 119.\nEach packet contains one authoritative DECISION_EVENT among routine request traces. Apply events in packet order; later updates replace only the fields they name. Request-trace diagnostics are not release decisions.\nA service is GO only if its approvedRelease equals its current release, errorPct <= 1.0, p95Ms <= 200, criticalVulns = 0, rollbackVerified is true, and freeze is false.\nOtherwise it is NO_GO. Use these blockingReasons exactly where applicable: approval_mismatch, error_budget, latency, security, rollback, freeze.\nRead all 120 packets using read_packet, at most six calls in one batch. Do not skip evidence. After each group of 12 packets, submit your current audit with checkpoint; mark complete=false until all packets are read. A checkpoint records your work but does not validate it or offer a way to read it back.\nAfter the final packet, submit complete=true with exactly one row for each service, including every required field and all blocking reasons. Then give a concise final report. Do not call other tools or request more work.",
+        "grader": "Exact field equality against a frozen answer key, blind to condition. No LLM judge.",
+        "started": "2026-10-13T10:26:43.719Z"
+      },
+      "completed": "2026-10-13T10:47:56.406Z",
+      "piSummaryToolResultSerialization": {
+        "packets": 120,
+        "receipts": 120,
+        "decisionEvents": 0
+      },
+      "order": ["off","on"],
+      "arms": [
+        {
+          "label": "3b2a3432",
+          "compaction": false,
+          "state": "failed",
+          "readCalls": 90,
+          "uniquePackets": 90,
+          "repeatedReads": 0,
+          "successfulReadCalls": 90,
+          "failedReadCalls": 0,
+          "elapsedMs": 340966,
+          "successfulCompactions": 0,
+          "compactions": [],
+          "grade": {
+            "label": "3b2a3432",
+            "correct": 80,
+            "total": 108,
+            "decisionsCorrect": 10,
+            "decisionsTotal": 12,
+            "completeClaim": false,
+            "extraRows": 0,
+            "duplicateRows": 0,
+            "mistakes": [
+              {"service":"service-00","field":"approvedRelease","expected":"r14-0-a-next","actual":"r14-0-a"},
+              {"service":"service-00","field":"errorPct","expected":0.9,"actual":1.5},
+              {"service":"service-00","field":"blockingReasons","expected":["approval_mismatch","rollback","freeze"],"actual":["error_budget","rollback","freeze"]},
+              {"service":"service-01","field":"errorPct","expected":0.6,"actual":0.3},
+              {"service":"service-02","field":"errorPct","expected":1.5,"actual":3},
+              {"service":"service-03","field":"approvedRelease","expected":"r14-3-a-next","actual":"r14-3-a"},
+              {"service":"service-03","field":"errorPct","expected":0.1,"actual":1.8},
+              {"service":"service-03","field":"blockingReasons","expected":["approval_mismatch","freeze"],"actual":["error_budget","freeze"]},
+              {"service":"service-04","field":"approvedRelease","expected":"r14-4-a-next","actual":"r14-4-a"},
+              {"service":"service-04","field":"errorPct","expected":1.4,"actual":3.2},
+              {"service":"service-04","field":"blockingReasons","expected":["approval_mismatch","error_budget","latency"],"actual":["error_budget","latency"]},
+              {"service":"service-05","field":"release","expected":"r14-5-a-next","actual":"r14-5-a"},
+              {"service":"service-05","field":"errorPct","expected":1.4,"actual":0.1},
+              {"service":"service-05","field":"blockingReasons","expected":["approval_mismatch","error_budget","freeze"],"actual":["freeze"]},
+              {"service":"service-06","field":"approvedRelease","expected":"r14-6-a-next","actual":"r14-6-a"},
+              {"service":"service-06","field":"errorPct","expected":1.5,"actual":3.4},
+              {"service":"service-06","field":"blockingReasons","expected":["approval_mismatch","error_budget","security","freeze"],"actual":["error_budget","security","freeze"]},
+              {"service":"service-07","field":"errorPct","expected":1.2,"actual":1.3},
+              {"service":"service-08","field":"errorPct","expected":0,"actual":0.7},
+              {"service":"service-09","field":"errorPct","expected":0,"actual":1.3},
+              {"service":"service-09","field":"decision","expected":"GO","actual":"NO_GO"},
+              {"service":"service-09","field":"blockingReasons","expected":[],"actual":["error_budget"]},
+              {"service":"service-10","field":"errorPct","expected":0.8,"actual":2.1},
+              {"service":"service-10","field":"decision","expected":"GO","actual":"NO_GO"},
+              {"service":"service-10","field":"blockingReasons","expected":[],"actual":["error_budget"]},
+              {"service":"service-11","field":"release","expected":"r14-11-a-next","actual":"r14-11-a"},
+              {"service":"service-11","field":"errorPct","expected":0.8,"actual":0},
+              {"service":"service-11","field":"blockingReasons","expected":["approval_mismatch","latency"],"actual":["latency"]}
+            ]
+          },
+          "checkpointGrades": [
+            {"read":12,"completeClaim":false,"correct":12,"total":12,"mistakes":[]},
+            {"read":24,"completeClaim":false,"correct":24,"total":24,"mistakes":[]},
+            {"read":36,"completeClaim":false,"correct":36,"total":36,"mistakes":[]},
+            {"read":48,"completeClaim":false,"correct":48,"total":48,"mistakes":[]},
+            {"read":60,"completeClaim":false,"correct":60,"total":60,"mistakes":[]},
+            {"read":72,"completeClaim":false,"correct":72,"total":72,"mistakes":[]},
+            {"read":84,"completeClaim":false,"correct":84,"total":84,"mistakes":[]}
+          ],
+          "finalAudit": {
+            "complete": false,
+            "services": [
+              {"service":"service-00","release":"r14-0-a","approvedRelease":"r14-0-a","errorPct":1.5,"p95Ms":166,"criticalVulns":0,"rollbackVerified":false,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","rollback","freeze"]},
+              {"service":"service-01","release":"r14-1-a","approvedRelease":"r14-1-a","errorPct":0.3,"p95Ms":260,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]},
+              {"service":"service-02","release":"r14-2-a","approvedRelease":"r14-2-a","errorPct":3,"p95Ms":200,"criticalVulns":0,"rollbackVerified":false,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","rollback"]},
+              {"service":"service-03","release":"r14-3-a","approvedRelease":"r14-3-a","errorPct":1.8,"p95Ms":128,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","freeze"]},
+              {"service":"service-04","release":"r14-4-a","approvedRelease":"r14-4-a","errorPct":3.2,"p95Ms":219,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","latency"]},
+              {"service":"service-05","release":"r14-5-a","approvedRelease":"r14-5-a","errorPct":0.1,"p95Ms":140,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["freeze"]},
+              {"service":"service-06","release":"r14-6-a","approvedRelease":"r14-6-a","errorPct":3.4,"p95Ms":179,"criticalVulns":1,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","security","freeze"]},
+              {"service":"service-07","release":"r14-7-a","approvedRelease":"r14-7-a","errorPct":1.3,"p95Ms":236,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","latency"]},
+              {"service":"service-08","release":"r14-8-a","approvedRelease":"r14-8-a","errorPct":0.7,"p95Ms":182,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["freeze"]},
+              {"service":"service-09","release":"r14-9-a","approvedRelease":"r14-9-a","errorPct":1.3,"p95Ms":200,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-10","release":"r14-10-a","approvedRelease":"r14-10-a","errorPct":2.1,"p95Ms":196,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-11","release":"r14-11-a","approvedRelease":"r14-11-a","errorPct":0,"p95Ms":225,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]}
+            ]
+          },
+          "report": "Task error: BENCHMARK_CONTEXT_LIMIT: Pi estimates 282023 tokens, above its configured 272000-token window.",
+          "warnings": [],
+          "usage": {
+            "requests": 22,
+            "input": 270760,
+            "cacheRead": 2800256,
+            "output": 7172,
+            "totalTokens": 3078188
+          },
+          "visibility": [
+            {"stage":"live","source":"current","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"live","source":"retained","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"finished","source":"current","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"finished","source":"retained","packets":90,"receipts":90,"evidenceTags":0}
+          ]
+        },
+        {
+          "label": "93efa1d0",
+          "compaction": true,
+          "state": "completed",
+          "readCalls": 144,
+          "uniquePackets": 120,
+          "repeatedReads": 24,
+          "successfulReadCalls": 144,
+          "failedReadCalls": 0,
+          "elapsedMs": 749223,
+          "successfulCompactions": 4,
+          "compactions": [
+            {"read":36,"reason":"threshold","success":true,"aborted":false},
+            {"read":60,"reason":"threshold","success":true,"aborted":false},
+            {"read":84,"reason":"threshold","success":true,"aborted":false},
+            {"read":108,"reason":"threshold","success":true,"aborted":false}
+          ],
+          "grade": {
+            "label": "93efa1d0",
+            "correct": 108,
+            "total": 108,
+            "decisionsCorrect": 12,
+            "decisionsTotal": 12,
+            "completeClaim": true,
+            "extraRows": 0,
+            "duplicateRows": 0,
+            "mistakes": []
+          },
+          "checkpointGrades": [
+            {"read":12,"completeClaim":false,"correct":12,"total":12,"mistakes":[]},
+            {"read":24,"completeClaim":false,"correct":24,"total":24,"mistakes":[]},
+            {"read":36,"completeClaim":false,"correct":36,"total":36,"mistakes":[]},
+            {"read":48,"completeClaim":false,"correct":48,"total":48,"mistakes":[]},
+            {"read":60,"completeClaim":false,"correct":60,"total":60,"mistakes":[]},
+            {"read":72,"completeClaim":false,"correct":72,"total":72,"mistakes":[]},
+            {"read":84,"completeClaim":false,"correct":84,"total":84,"mistakes":[]},
+            {"read":96,"completeClaim":false,"correct":84,"total":84,"mistakes":[]},
+            {"read":108,"completeClaim":false,"correct":84,"total":84,"mistakes":[]},
+            {"read":120,"completeClaim":true,"correct":84,"total":84,"mistakes":[]}
+          ],
+          "finalAudit": {
+            "complete": true,
+            "services": [
+              {"service":"service-00","release":"r14-0-a","approvedRelease":"r14-0-a-next","errorPct":0.9,"p95Ms":166,"criticalVulns":0,"rollbackVerified":false,"freeze":true,"decision":"NO_GO","blockingReasons":["approval_mismatch","rollback","freeze"]},
+              {"service":"service-01","release":"r14-1-a","approvedRelease":"r14-1-a","errorPct":0.6,"p95Ms":260,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]},
+              {"service":"service-02","release":"r14-2-a","approvedRelease":"r14-2-a","errorPct":1.5,"p95Ms":200,"criticalVulns":0,"rollbackVerified":false,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","rollback"]},
+              {"service":"service-03","release":"r14-3-a","approvedRelease":"r14-3-a-next","errorPct":0.1,"p95Ms":128,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["approval_mismatch","freeze"]},
+              {"service":"service-04","release":"r14-4-a","approvedRelease":"r14-4-a-next","errorPct":1.4,"p95Ms":219,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["approval_mismatch","error_budget","latency"]},
+              {"service":"service-05","release":"r14-5-a-next","approvedRelease":"r14-5-a","errorPct":1.4,"p95Ms":140,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["approval_mismatch","error_budget","freeze"]},
+              {"service":"service-06","release":"r14-6-a","approvedRelease":"r14-6-a-next","errorPct":1.5,"p95Ms":179,"criticalVulns":1,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["approval_mismatch","error_budget","security","freeze"]},
+              {"service":"service-07","release":"r14-7-a","approvedRelease":"r14-7-a","errorPct":1.2,"p95Ms":236,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","latency"]},
+              {"service":"service-08","release":"r14-8-a","approvedRelease":"r14-8-a","errorPct":0,"p95Ms":182,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["freeze"]},
+              {"service":"service-09","release":"r14-9-a","approvedRelease":"r14-9-a","errorPct":0,"p95Ms":200,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-10","release":"r14-10-a","approvedRelease":"r14-10-a","errorPct":0.8,"p95Ms":196,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-11","release":"r14-11-a-next","approvedRelease":"r14-11-a","errorPct":0.8,"p95Ms":225,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["approval_mismatch","latency"]}
+            ]
+          },
+          "report": "All 120 packet indices have been read, and the final `complete=true` checkpoint was recorded with 12 service rows.\n\n### Recorded release readiness\n**2 GO · 10 NO_GO**\n\n| Service | Decision | Blocking reasons |\n|---|---|---|\n| service-00 | NO_GO | `approval_mismatch`, `rollback`, `freeze` |\n| service-01 | NO_GO | `latency` |\n| service-02 | NO_GO | `error_budget`, `rollback` |\n| service-03 | NO_GO | `approval_mismatch`, `freeze` |\n| service-04 | NO_GO | `approval_mismatch`, `error_budget`, `latency` |\n| service-05 | NO_GO | `approval_mismatch`, `error_budget`, `freeze` |\n| service-06 | NO_GO | `approval_mismatch`, `error_budget`, `security`, `freeze` |\n| service-07 | NO_GO | `error_budget`, `latency` |\n| service-08 | NO_GO | `freeze` |\n| service-09 | GO | None |\n| service-10 | GO | None |\n| service-11 | NO_GO | `approval_mismatch`, `latency` |\n\n**Evidence limitation:** Earlier packet outputs were reported as truncated before their authoritative events. The final checkpoint therefore contains carried-forward state that was not independently verified in the available history. These are recorded results, not a fully verified release authorization; checkpoint acceptance does not validate correctness.",
+          "warnings": [],
+          "usage": {
+            "requests": 39,
+            "input": 633090,
+            "cacheRead": 1719424,
+            "output": 18159,
+            "totalTokens": 2370673
+          },
+          "visibility": [
+            {"stage":"live","source":"current","packets":36,"receipts":6,"evidenceTags":0},
+            {"stage":"live","source":"retained","packets":36,"receipts":36,"evidenceTags":0},
+            {"stage":"finished","source":"current","packets":120,"receipts":120,"evidenceTags":0},
+            {"stage":"finished","source":"retained","packets":120,"receipts":120,"evidenceTags":0}
+          ]
+        }
+      ],
+      "commonEvidenceCheckpoints": [
+        {
+          "packets": 12,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11],
+          "on": {
+            "correct": 12,
+            "total": 12,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 12,
+            "total": 12,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 24,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],
+          "on": {
+            "correct": 24,
+            "total": 24,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 24,
+            "total": 24,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 36,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35],
+          "on": {
+            "correct": 36,
+            "total": 36,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 36,
+            "total": 36,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 48,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47],
+          "on": {
+            "correct": 48,
+            "total": 48,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 48,
+            "total": 48,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 60,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59],
+          "on": {
+            "correct": 60,
+            "total": 60,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 60,
+            "total": 60,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 72,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71],
+          "on": {
+            "correct": 72,
+            "total": 72,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 72,
+            "total": 72,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 84,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83],
+          "on": {
+            "correct": 84,
+            "total": 84,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 84,
+            "total": 84,
+            "mistakes": []
+          }
+        }
+      ],
+      "parentRecovery": [
+        {
+          "label": "3b2a3432-live-current",
+          "stage": "live",
+          "candidate": false,
+          "packetsRead": 90,
+          "indices": [0,30,60,89],
+          "calls": 5,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-f4d871b38c098320\",\"evidenceTag\":null},{\"packet\":30,\"receipt\":\"receipt-112acbfff70cce7c\",\"evidenceTag\":null},{\"packet\":60,\"receipt\":\"receipt-f31e306ac4a9c5de\",\"evidenceTag\":null},{\"packet\":89,\"receipt\":\"receipt-90dc27394a72230b\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-f4d871b38c098320","evidenceTag":null},"expected":{"receipt":"receipt-f4d871b38c098320","evidenceTag":"evidence-fe3e847f77f99f54"}},
+            {"packet":30,"actual":{"packet":30,"receipt":"receipt-112acbfff70cce7c","evidenceTag":null},"expected":{"receipt":"receipt-112acbfff70cce7c","evidenceTag":"evidence-c2cf4c007f13c864"}},
+            {"packet":60,"actual":{"packet":60,"receipt":"receipt-f31e306ac4a9c5de","evidenceTag":null},"expected":{"receipt":"receipt-f31e306ac4a9c5de","evidenceTag":"evidence-ce8991385770faa9"}},
+            {"packet":89,"actual":{"packet":89,"receipt":"receipt-90dc27394a72230b","evidenceTag":null},"expected":{"receipt":"receipt-90dc27394a72230b","evidenceTag":"evidence-742e93506abb4727"}}
+          ],
+          "attemptedPackets": 90
+        },
+        {
+          "label": "3b2a3432-finished-current",
+          "stage": "finished",
+          "candidate": false,
+          "packetsRead": 90,
+          "indices": [0,30,60,89],
+          "calls": 5,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-f4d871b38c098320\",\"evidenceTag\":null},{\"packet\":30,\"receipt\":\"receipt-112acbfff70cce7c\",\"evidenceTag\":null},{\"packet\":60,\"receipt\":\"receipt-f31e306ac4a9c5de\",\"evidenceTag\":null},{\"packet\":89,\"receipt\":\"receipt-90dc27394a72230b\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-f4d871b38c098320","evidenceTag":null},"expected":{"receipt":"receipt-f4d871b38c098320","evidenceTag":"evidence-fe3e847f77f99f54"}},
+            {"packet":30,"actual":{"packet":30,"receipt":"receipt-112acbfff70cce7c","evidenceTag":null},"expected":{"receipt":"receipt-112acbfff70cce7c","evidenceTag":"evidence-c2cf4c007f13c864"}},
+            {"packet":60,"actual":{"packet":60,"receipt":"receipt-f31e306ac4a9c5de","evidenceTag":null},"expected":{"receipt":"receipt-f31e306ac4a9c5de","evidenceTag":"evidence-ce8991385770faa9"}},
+            {"packet":89,"actual":{"packet":89,"receipt":"receipt-90dc27394a72230b","evidenceTag":null},"expected":{"receipt":"receipt-90dc27394a72230b","evidenceTag":"evidence-742e93506abb4727"}}
+          ],
+          "attemptedPackets": 90
+        },
+        {
+          "label": "93efa1d0-live-current",
+          "stage": "live",
+          "candidate": false,
+          "packetsRead": 36,
+          "indices": [0,12,24,35],
+          "calls": 1,
+          "correct": 1,
+          "total": 8,
+          "accessible": 1,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":null,\"evidenceTag\":null},{\"packet\":12,\"receipt\":null,\"evidenceTag\":null},{\"packet\":24,\"receipt\":null,\"evidenceTag\":null},{\"packet\":35,\"receipt\":\"receipt-eaa773d697645518\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-f4d871b38c098320","evidenceTag":"evidence-fe3e847f77f99f54"}},
+            {"packet":12,"actual":{"packet":12,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-a7c0e27ccb8ae88a","evidenceTag":"evidence-d72faccd7037b262"}},
+            {"packet":24,"actual":{"packet":24,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-4e676768f3f2bb7a","evidenceTag":"evidence-44cabdcd58382bdb"}},
+            {"packet":35,"actual":{"packet":35,"receipt":"receipt-eaa773d697645518","evidenceTag":null},"expected":{"receipt":"receipt-eaa773d697645518","evidenceTag":"evidence-82937b4360df9060"}}
+          ],
+          "attemptedPackets": 36
+        },
+        {
+          "label": "93efa1d0-live-retained",
+          "stage": "live",
+          "candidate": true,
+          "packetsRead": 36,
+          "indices": [0,12,24,35],
+          "calls": 2,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-f4d871b38c098320\",\"evidenceTag\":null},{\"packet\":12,\"receipt\":\"receipt-a7c0e27ccb8ae88a\",\"evidenceTag\":null},{\"packet\":24,\"receipt\":\"receipt-4e676768f3f2bb7a\",\"evidenceTag\":null},{\"packet\":35,\"receipt\":\"receipt-eaa773d697645518\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-f4d871b38c098320","evidenceTag":null},"expected":{"receipt":"receipt-f4d871b38c098320","evidenceTag":"evidence-fe3e847f77f99f54"}},
+            {"packet":12,"actual":{"packet":12,"receipt":"receipt-a7c0e27ccb8ae88a","evidenceTag":null},"expected":{"receipt":"receipt-a7c0e27ccb8ae88a","evidenceTag":"evidence-d72faccd7037b262"}},
+            {"packet":24,"actual":{"packet":24,"receipt":"receipt-4e676768f3f2bb7a","evidenceTag":null},"expected":{"receipt":"receipt-4e676768f3f2bb7a","evidenceTag":"evidence-44cabdcd58382bdb"}},
+            {"packet":35,"actual":{"packet":35,"receipt":"receipt-eaa773d697645518","evidenceTag":null},"expected":{"receipt":"receipt-eaa773d697645518","evidenceTag":"evidence-82937b4360df9060"}}
+          ],
+          "attemptedPackets": 36
+        },
+        {
+          "label": "93efa1d0-finished-current",
+          "stage": "finished",
+          "candidate": false,
+          "packetsRead": 120,
+          "indices": [0,40,80,119],
+          "calls": 7,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-f4d871b38c098320\",\"evidenceTag\":null},{\"packet\":40,\"receipt\":\"receipt-8c6bd484cce45d7b\",\"evidenceTag\":null},{\"packet\":80,\"receipt\":\"receipt-087744270796ad9d\",\"evidenceTag\":null},{\"packet\":119,\"receipt\":\"receipt-dfcd0b44203a6907\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-f4d871b38c098320","evidenceTag":null},"expected":{"receipt":"receipt-f4d871b38c098320","evidenceTag":"evidence-fe3e847f77f99f54"}},
+            {"packet":40,"actual":{"packet":40,"receipt":"receipt-8c6bd484cce45d7b","evidenceTag":null},"expected":{"receipt":"receipt-8c6bd484cce45d7b","evidenceTag":"evidence-7fc3f42b039c07a3"}},
+            {"packet":80,"actual":{"packet":80,"receipt":"receipt-087744270796ad9d","evidenceTag":null},"expected":{"receipt":"receipt-087744270796ad9d","evidenceTag":"evidence-f0a6088ea9abbac3"}},
+            {"packet":119,"actual":{"packet":119,"receipt":"receipt-dfcd0b44203a6907","evidenceTag":null},"expected":{"receipt":"receipt-dfcd0b44203a6907","evidenceTag":"evidence-824313e1de0eef3d"}}
+          ],
+          "attemptedPackets": 120
+        }
+      ],
+      "requests": [
+        {"role":"3b2a3432:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1076,"output":142,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1218,"cost":{"input":0.002152,"output":0.001704,"cacheRead":0,"cacheWrite":0,"total":0.003856}},"stopReason":"stop"},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1048,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1152,"cost":{"input":0.0020959999999999998,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.003136}},"stopReason":"toolUse","ms":6785},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":19596,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":19700,"cost":{"input":0.039192,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.040232}},"stopReason":"toolUse","ms":6927},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18756,"output":754,"cacheRead":19456,"cacheWrite":0,"reasoning":0,"totalTokens":38966,"cost":{"input":0.037512,"output":0.007540000000000001,"cacheRead":0.0019456000000000002,"cacheWrite":0,"total":0.046997599999999994}},"stopReason":"toolUse","ms":29090},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":964,"output":104,"cacheRead":38016,"cacheWrite":0,"reasoning":0,"totalTokens":39084,"cost":{"input":0.0019279999999999998,"output":0.0010400000000000001,"cacheRead":0.0038016000000000005,"cacheWrite":0,"total":0.006769600000000001}},"stopReason":"toolUse","ms":9125},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18787,"output":104,"cacheRead":38784,"cacheWrite":0,"reasoning":0,"totalTokens":57675,"cost":{"input":0.037573999999999996,"output":0.0010400000000000001,"cacheRead":0.0038784,"cacheWrite":0,"total":0.04249239999999999}},"stopReason":"toolUse","ms":7703},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18681,"output":798,"cacheRead":57472,"cacheWrite":0,"reasoning":0,"totalTokens":76951,"cost":{"input":0.037362,"output":0.007980000000000001,"cacheRead":0.005747200000000001,"cacheWrite":0,"total":0.0510892}},"stopReason":"toolUse","ms":29342},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":933,"output":104,"cacheRead":76032,"cacheWrite":0,"reasoning":0,"totalTokens":77069,"cost":{"input":0.0018659999999999998,"output":0.0010400000000000001,"cacheRead":0.007603200000000001,"cacheWrite":0,"total":0.0105092}},"stopReason":"toolUse","ms":8358},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18733,"output":104,"cacheRead":76800,"cacheWrite":0,"reasoning":0,"totalTokens":95637,"cost":{"input":0.037466,"output":0.0010400000000000001,"cacheRead":0.007680000000000001,"cacheWrite":0,"total":0.046186}},"stopReason":"toolUse","ms":7168},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18751,"output":810,"cacheRead":95360,"cacheWrite":0,"reasoning":0,"totalTokens":114921,"cost":{"input":0.037502,"output":0.008100000000000001,"cacheRead":0.009536000000000001,"cacheWrite":0,"total":0.055138000000000006}},"stopReason":"toolUse","ms":27951},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1015,"output":104,"cacheRead":113920,"cacheWrite":0,"reasoning":0,"totalTokens":115039,"cost":{"input":0.00203,"output":0.0010400000000000001,"cacheRead":0.011392000000000001,"cacheWrite":0,"total":0.014462000000000001}},"stopReason":"toolUse","ms":8851},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18711,"output":104,"cacheRead":114816,"cacheWrite":0,"reasoning":0,"totalTokens":133631,"cost":{"input":0.037422,"output":0.0010400000000000001,"cacheRead":0.011481600000000002,"cacheWrite":0,"total":0.0499436}},"stopReason":"toolUse","ms":7520},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18716,"output":810,"cacheRead":133376,"cacheWrite":0,"reasoning":0,"totalTokens":152902,"cost":{"input":0.037432,"output":0.008100000000000001,"cacheRead":0.013337600000000002,"cacheWrite":0,"total":0.05886960000000001}},"stopReason":"toolUse","ms":28392},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":980,"output":104,"cacheRead":151936,"cacheWrite":0,"reasoning":0,"totalTokens":153020,"cost":{"input":0.00196,"output":0.0010400000000000001,"cacheRead":0.015193600000000002,"cacheWrite":0,"total":0.0181936}},"stopReason":"toolUse","ms":11829},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18628,"output":104,"cacheRead":152832,"cacheWrite":0,"reasoning":0,"totalTokens":171564,"cost":{"input":0.037256,"output":0.0010400000000000001,"cacheRead":0.015283200000000002,"cacheWrite":0,"total":0.0535792}},"stopReason":"toolUse","ms":10261},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18773,"output":812,"cacheRead":171264,"cacheWrite":0,"reasoning":0,"totalTokens":190849,"cost":{"input":0.037545999999999996,"output":0.00812,"cacheRead":0.0171264,"cacheWrite":0,"total":0.0627924}},"stopReason":"toolUse","ms":29270},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":911,"output":104,"cacheRead":189952,"cacheWrite":0,"reasoning":0,"totalTokens":190967,"cost":{"input":0.0018219999999999998,"output":0.0010400000000000001,"cacheRead":0.0189952,"cacheWrite":0,"total":0.0218572}},"stopReason":"toolUse","ms":7617},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18772,"output":104,"cacheRead":190720,"cacheWrite":0,"reasoning":0,"totalTokens":209596,"cost":{"input":0.037544,"output":0.0010400000000000001,"cacheRead":0.019072000000000002,"cacheWrite":0,"total":0.057656}},"stopReason":"toolUse","ms":9012},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18662,"output":826,"cacheRead":209408,"cacheWrite":0,"reasoning":32,"totalTokens":228896,"cost":{"input":0.037323999999999996,"output":0.00826,"cacheRead":0.020940800000000002,"cacheWrite":0,"total":0.0665248}},"stopReason":"toolUse","ms":31674},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":942,"output":104,"cacheRead":227968,"cacheWrite":0,"reasoning":0,"totalTokens":229014,"cost":{"input":0.0018839999999999998,"output":0.0010400000000000001,"cacheRead":0.022796800000000002,"cacheWrite":0,"total":0.025720800000000002}},"stopReason":"toolUse","ms":9151},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18781,"output":104,"cacheRead":228736,"cacheWrite":0,"reasoning":0,"totalTokens":247621,"cost":{"input":0.037562,"output":0.0010400000000000001,"cacheRead":0.0228736,"cacheWrite":0,"total":0.0614756}},"stopReason":"toolUse","ms":8422},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18682,"output":802,"cacheRead":247424,"cacheWrite":0,"reasoning":0,"totalTokens":266908,"cost":{"input":0.037364,"output":0.008020000000000001,"cacheRead":0.0247424,"cacheWrite":0,"total":0.0701264}},"stopReason":"toolUse","ms":32473},
+        {"role":"3b2a3432:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":938,"output":104,"cacheRead":265984,"cacheWrite":0,"reasoning":0,"totalTokens":267026,"cost":{"input":0.0018759999999999998,"output":0.0010400000000000001,"cacheRead":0.0265984,"cacheWrite":0,"total":0.029514400000000003}},"stopReason":"toolUse","ms":7749},
+        {"role":"93efa1d0:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1076,"output":134,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1210,"cost":{"input":0.002152,"output":0.001608,"cacheRead":0,"cacheWrite":0,"total":0.00376}},"stopReason":"stop"},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1039,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1143,"cost":{"input":0.002078,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.003118}},"stopReason":"toolUse","ms":6604},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":19587,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":19691,"cost":{"input":0.039174,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.040214}},"stopReason":"toolUse","ms":8355},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18747,"output":754,"cacheRead":19456,"cacheWrite":0,"reasoning":0,"totalTokens":38957,"cost":{"input":0.037494,"output":0.007540000000000001,"cacheRead":0.0019456000000000002,"cacheWrite":0,"total":0.046979599999999996}},"stopReason":"toolUse","ms":27086},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":955,"output":104,"cacheRead":38016,"cacheWrite":0,"reasoning":0,"totalTokens":39075,"cost":{"input":0.0019099999999999998,"output":0.0010400000000000001,"cacheRead":0.0038016000000000005,"cacheWrite":0,"total":0.0067516}},"stopReason":"toolUse","ms":8282},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18778,"output":104,"cacheRead":38784,"cacheWrite":0,"reasoning":0,"totalTokens":57666,"cost":{"input":0.037556,"output":0.0010400000000000001,"cacheRead":0.0038784,"cacheWrite":0,"total":0.042474399999999995}},"stopReason":"toolUse","ms":13590},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18672,"output":798,"cacheRead":57472,"cacheWrite":0,"reasoning":0,"totalTokens":76942,"cost":{"input":0.037343999999999995,"output":0.007980000000000001,"cacheRead":0.005747200000000001,"cacheWrite":0,"total":0.0510712}},"stopReason":"toolUse","ms":27918},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":924,"output":104,"cacheRead":76032,"cacheWrite":0,"reasoning":0,"totalTokens":77060,"cost":{"input":0.0018479999999999998,"output":0.0010400000000000001,"cacheRead":0.007603200000000001,"cacheWrite":0,"total":0.010491200000000001}},"stopReason":"toolUse","ms":7399},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18724,"output":104,"cacheRead":76800,"cacheWrite":0,"reasoning":0,"totalTokens":95628,"cost":{"input":0.037447999999999995,"output":0.0010400000000000001,"cacheRead":0.007680000000000001,"cacheWrite":0,"total":0.046167999999999994}},"stopReason":"toolUse","ms":7560},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18742,"output":810,"cacheRead":95360,"cacheWrite":0,"reasoning":0,"totalTokens":114912,"cost":{"input":0.037483999999999996,"output":0.008100000000000001,"cacheRead":0.009536000000000001,"cacheWrite":0,"total":0.05512}},"stopReason":"toolUse","ms":37725},
+        {"role":"93efa1d0:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21112,"output":918,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":22030,"cost":{"input":0.042224,"output":0.00918,"cacheRead":0,"cacheWrite":0,"total":0.051404}},"stopReason":"stop","ms":32093},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21000,"output":222,"cacheRead":0,"cacheWrite":0,"reasoning":116,"totalTokens":21222,"cost":{"input":0.041999999999999996,"output":0.00222,"cacheRead":0,"cacheWrite":0,"total":0.044219999999999995}},"stopReason":"toolUse","ms":10339},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18822,"output":125,"cacheRead":20864,"cacheWrite":0,"reasoning":19,"totalTokens":39811,"cost":{"input":0.037644,"output":0.00125,"cacheRead":0.0020864,"cacheWrite":0,"total":0.0409804}},"stopReason":"toolUse","ms":8039},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18747,"output":104,"cacheRead":39552,"cacheWrite":0,"reasoning":0,"totalTokens":58403,"cost":{"input":0.037494,"output":0.0010400000000000001,"cacheRead":0.003955200000000001,"cacheWrite":0,"total":0.0424892}},"stopReason":"toolUse","ms":7883},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18752,"output":810,"cacheRead":58112,"cacheWrite":0,"reasoning":0,"totalTokens":77674,"cost":{"input":0.037503999999999996,"output":0.008100000000000001,"cacheRead":0.005811200000000001,"cacheWrite":0,"total":0.0514152}},"stopReason":"toolUse","ms":28015},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1016,"output":104,"cacheRead":76672,"cacheWrite":0,"reasoning":0,"totalTokens":77792,"cost":{"input":0.002032,"output":0.0010400000000000001,"cacheRead":0.007667200000000001,"cacheWrite":0,"total":0.0107392}},"stopReason":"toolUse","ms":10624},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18664,"output":104,"cacheRead":77568,"cacheWrite":0,"reasoning":0,"totalTokens":96336,"cost":{"input":0.037328,"output":0.0010400000000000001,"cacheRead":0.0077568,"cacheWrite":0,"total":0.0461248}},"stopReason":"toolUse","ms":8379},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18681,"output":812,"cacheRead":96128,"cacheWrite":0,"reasoning":0,"totalTokens":115621,"cost":{"input":0.037362,"output":0.00812,"cacheRead":0.009612800000000001,"cacheWrite":0,"total":0.0550948}},"stopReason":"toolUse","ms":30375},
+        {"role":"93efa1d0:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22006,"output":1673,"cacheRead":0,"cacheWrite":0,"reasoning":131,"totalTokens":23679,"cost":{"input":0.044011999999999996,"output":0.016730000000000002,"cacheRead":0,"cacheWrite":0,"total":0.060742}},"stopReason":"stop","ms":54565},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21610,"output":149,"cacheRead":0,"cacheWrite":0,"reasoning":43,"totalTokens":21759,"cost":{"input":0.04322,"output":0.0014900000000000002,"cacheRead":0,"cacheWrite":0,"total":0.04471}},"stopReason":"toolUse","ms":9509},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18695,"output":104,"cacheRead":21504,"cacheWrite":0,"reasoning":0,"totalTokens":40303,"cost":{"input":0.03739,"output":0.0010400000000000001,"cacheRead":0.0021504000000000002,"cacheWrite":0,"total":0.0405804}},"stopReason":"toolUse","ms":9745},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18764,"output":104,"cacheRead":40064,"cacheWrite":0,"reasoning":0,"totalTokens":58932,"cost":{"input":0.037528,"output":0.0010400000000000001,"cacheRead":0.0040064,"cacheWrite":0,"total":0.0425744}},"stopReason":"toolUse","ms":7963},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18782,"output":790,"cacheRead":58624,"cacheWrite":0,"reasoning":0,"totalTokens":78196,"cost":{"input":0.037564,"output":0.0079,"cacheRead":0.0058624,"cacheWrite":0,"total":0.05132640000000001}},"stopReason":"toolUse","ms":28572},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":898,"output":104,"cacheRead":77312,"cacheWrite":0,"reasoning":0,"totalTokens":78314,"cost":{"input":0.0017959999999999999,"output":0.0010400000000000001,"cacheRead":0.007731200000000001,"cacheWrite":0,"total":0.0105672}},"stopReason":"toolUse","ms":7176},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18737,"output":104,"cacheRead":78080,"cacheWrite":0,"reasoning":0,"totalTokens":96921,"cost":{"input":0.037474,"output":0.0010400000000000001,"cacheRead":0.007808000000000001,"cacheWrite":0,"total":0.046322}},"stopReason":"toolUse","ms":10031},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18766,"output":802,"cacheRead":96640,"cacheWrite":0,"reasoning":0,"totalTokens":116208,"cost":{"input":0.037531999999999996,"output":0.008020000000000001,"cacheRead":0.009664,"cacheWrite":0,"total":0.055215999999999994}},"stopReason":"toolUse","ms":28910},
+        {"role":"93efa1d0:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22583,"output":1912,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":24495,"cost":{"input":0.045166,"output":0.01912,"cacheRead":0,"cacheWrite":0,"total":0.064286}},"stopReason":"stop","ms":62245},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21984,"output":284,"cacheRead":0,"cacheWrite":0,"reasoning":178,"totalTokens":22268,"cost":{"input":0.043968,"output":0.00284,"cacheRead":0,"cacheWrite":0,"total":0.046808}},"stopReason":"toolUse","ms":13990},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18883,"output":104,"cacheRead":21888,"cacheWrite":0,"reasoning":0,"totalTokens":40875,"cost":{"input":0.037766,"output":0.0010400000000000001,"cacheRead":0.0021888000000000003,"cacheWrite":0,"total":0.0409948}},"stopReason":"toolUse","ms":6566},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18796,"output":104,"cacheRead":40576,"cacheWrite":0,"reasoning":0,"totalTokens":59476,"cost":{"input":0.037592,"output":0.0010400000000000001,"cacheRead":0.004057600000000001,"cacheWrite":0,"total":0.0426896}},"stopReason":"toolUse","ms":7676},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18705,"output":822,"cacheRead":59264,"cacheWrite":0,"reasoning":0,"totalTokens":78791,"cost":{"input":0.03741,"output":0.00822,"cacheRead":0.005926400000000001,"cacheWrite":0,"total":0.051556399999999995}},"stopReason":"toolUse","ms":28460},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":981,"output":104,"cacheRead":77824,"cacheWrite":0,"reasoning":0,"totalTokens":78909,"cost":{"input":0.0019619999999999998,"output":0.0010400000000000001,"cacheRead":0.007782400000000001,"cacheWrite":0,"total":0.010784400000000001}},"stopReason":"toolUse","ms":8716},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18694,"output":104,"cacheRead":78720,"cacheWrite":0,"reasoning":0,"totalTokens":97518,"cost":{"input":0.037388,"output":0.0010400000000000001,"cacheRead":0.007872,"cacheWrite":0,"total":0.046299999999999994}},"stopReason":"toolUse","ms":7107},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18709,"output":811,"cacheRead":97280,"cacheWrite":0,"reasoning":0,"totalTokens":116800,"cost":{"input":0.037418,"output":0.008110000000000001,"cacheRead":0.009728,"cacheWrite":0,"total":0.055256}},"stopReason":"toolUse","ms":28583},
+        {"role":"93efa1d0:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22848,"output":2359,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":25207,"cost":{"input":0.045696,"output":0.023590000000000003,"cacheRead":0,"cacheWrite":0,"total":0.069286}},"stopReason":"stop","ms":74647},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22426,"output":149,"cacheRead":0,"cacheWrite":0,"reasoning":43,"totalTokens":22575,"cost":{"input":0.044851999999999996,"output":0.0014900000000000002,"cacheRead":0,"cacheWrite":0,"total":0.046341999999999994}},"stopReason":"toolUse","ms":10233},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18808,"output":104,"cacheRead":22272,"cacheWrite":0,"reasoning":0,"totalTokens":41184,"cost":{"input":0.037616,"output":0.0010400000000000001,"cacheRead":0.0022272000000000004,"cacheWrite":0,"total":0.040883199999999995}},"stopReason":"toolUse","ms":7401},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18708,"output":104,"cacheRead":40960,"cacheWrite":0,"reasoning":0,"totalTokens":59772,"cost":{"input":0.037416,"output":0.0010400000000000001,"cacheRead":0.004096000000000001,"cacheWrite":0,"total":0.042552}},"stopReason":"toolUse","ms":6930},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18735,"output":821,"cacheRead":59520,"cacheWrite":0,"reasoning":0,"totalTokens":79076,"cost":{"input":0.037469999999999996,"output":0.00821,"cacheRead":0.005952000000000001,"cacheWrite":0,"total":0.051632}},"stopReason":"toolUse","ms":28877},
+        {"role":"93efa1d0:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1010,"output":362,"cacheRead":78080,"cacheWrite":0,"reasoning":51,"totalTokens":79452,"cost":{"input":0.00202,"output":0.0036200000000000004,"cacheRead":0.007808000000000001,"cacheWrite":0,"total":0.013448000000000002}},"stopReason":"stop","ms":14600},
+        {"role":"3b2a3432-live-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":97,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1179,"cost":{"input":0.0021639999999999997,"output":0.001164,"cacheRead":0,"cacheWrite":0,"total":0.003328}},"stopReason":"stop"},
+        {"role":"3b2a3432-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":888,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":909,"cost":{"input":0.001776,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.001986}},"stopReason":"toolUse","ms":4865},
+        {"role":"3b2a3432-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8064,"output":153,"cacheRead":0,"cacheWrite":0,"reasoning":120,"totalTokens":8217,"cost":{"input":0.016128,"output":0.0015300000000000001,"cacheRead":0,"cacheWrite":0,"total":0.017658}},"stopReason":"toolUse","ms":11207},
+        {"role":"3b2a3432-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":15435,"output":31,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":15466,"cost":{"input":0.030869999999999998,"output":0.00031,"cacheRead":0,"cacheWrite":0,"total":0.03118}},"stopReason":"toolUse","ms":4764},
+        {"role":"3b2a3432-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7496,"output":31,"cacheRead":15232,"cacheWrite":0,"reasoning":0,"totalTokens":22759,"cost":{"input":0.014992,"output":0.00031,"cacheRead":0.0015232000000000002,"cacheWrite":0,"total":0.0168252}},"stopReason":"toolUse","ms":4916},
+        {"role":"3b2a3432-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7489,"output":31,"cacheRead":22528,"cacheWrite":0,"reasoning":0,"totalTokens":30048,"cost":{"input":0.014978,"output":0.00031,"cacheRead":0.0022528,"cacheWrite":0,"total":0.0175408}},"stopReason":"toolUse","ms":5046},
+        {"role":"3b2a3432-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":751,"output":163,"cacheRead":29824,"cacheWrite":0,"reasoning":57,"totalTokens":30738,"cost":{"input":0.0015019999999999999,"output":0.0016300000000000002,"cacheRead":0.0029824,"cacheWrite":0,"total":0.006114400000000001}},"stopReason":"stop","ms":10341},
+        {"role":"3b2a3432-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":822,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":843,"cost":{"input":0.0016439999999999998,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.0018539999999999997}},"stopReason":"toolUse","ms":3454},
+        {"role":"3b2a3432-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7998,"output":99,"cacheRead":0,"cacheWrite":0,"reasoning":66,"totalTokens":8097,"cost":{"input":0.015996,"output":0.00099,"cacheRead":0,"cacheWrite":0,"total":0.016986}},"stopReason":"toolUse","ms":5585},
+        {"role":"3b2a3432-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7507,"output":31,"cacheRead":7808,"cacheWrite":0,"reasoning":0,"totalTokens":15346,"cost":{"input":0.015014,"output":0.00031,"cacheRead":0.0007808000000000001,"cacheWrite":0,"total":0.0161048}},"stopReason":"toolUse","ms":8371},
+        {"role":"3b2a3432-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7376,"output":31,"cacheRead":15232,"cacheWrite":0,"reasoning":0,"totalTokens":22639,"cost":{"input":0.014752,"output":0.00031,"cacheRead":0.0015232000000000002,"cacheWrite":0,"total":0.016585199999999998}},"stopReason":"toolUse","ms":4759},
+        {"role":"3b2a3432-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7369,"output":31,"cacheRead":22528,"cacheWrite":0,"reasoning":0,"totalTokens":29928,"cost":{"input":0.014738,"output":0.00031,"cacheRead":0.0022528,"cacheWrite":0,"total":0.017300799999999998}},"stopReason":"toolUse","ms":5358},
+        {"role":"3b2a3432-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":759,"output":104,"cacheRead":29696,"cacheWrite":0,"reasoning":0,"totalTokens":30559,"cost":{"input":0.001518,"output":0.0010400000000000001,"cacheRead":0.0029696,"cacheWrite":0,"total":0.005527600000000001}},"stopReason":"stop","ms":8355},
+        {"role":"93efa1d0-live-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":144,"cacheRead":0,"cacheWrite":0,"reasoning":19,"totalTokens":1226,"cost":{"input":0.0021639999999999997,"output":0.001728,"cacheRead":0,"cacheWrite":0,"total":0.0038919999999999996}},"stopReason":"stop"},
+        {"role":"93efa1d0-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":914,"output":30,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":944,"cost":{"input":0.001828,"output":0.00030000000000000003,"cacheRead":0,"cacheWrite":0,"total":0.002128}},"stopReason":"toolUse","ms":4477},
+        {"role":"93efa1d0-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":3043,"output":267,"cacheRead":0,"cacheWrite":0,"reasoning":193,"totalTokens":3310,"cost":{"input":0.006085999999999999,"output":0.00267,"cacheRead":0,"cacheWrite":0,"total":0.008756}},"stopReason":"stop","ms":11829},
+        {"role":"93efa1d0-live-retained:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":139,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1221,"cost":{"input":0.0021639999999999997,"output":0.001668,"cacheRead":0,"cacheWrite":0,"total":0.0038319999999999995}},"stopReason":"stop"},
+        {"role":"93efa1d0-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":930,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":951,"cost":{"input":0.0018599999999999999,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.00207}},"stopReason":"toolUse","ms":3720},
+        {"role":"93efa1d0-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8106,"output":31,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":8137,"cost":{"input":0.016212,"output":0.00031,"cacheRead":0,"cacheWrite":0,"total":0.016522000000000002}},"stopReason":"toolUse","ms":4165},
+        {"role":"93efa1d0-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":4961,"output":228,"cacheRead":7936,"cacheWrite":0,"reasoning":122,"totalTokens":13125,"cost":{"input":0.009922,"output":0.0022800000000000003,"cacheRead":0.0007936000000000001,"cacheWrite":0,"total":0.012995600000000001}},"stopReason":"stop","ms":10220},
+        {"role":"93efa1d0-finished-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1130,"output":130,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1260,"cost":{"input":0.00226,"output":0.00156,"cacheRead":0,"cacheWrite":0,"total":0.0038199999999999996}},"stopReason":"stop"},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":921,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":942,"cost":{"input":0.0018419999999999999,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.002052}},"stopReason":"toolUse","ms":3514},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8097,"output":139,"cacheRead":0,"cacheWrite":0,"reasoning":106,"totalTokens":8236,"cost":{"input":0.016194,"output":0.0013900000000000002,"cacheRead":0,"cacheWrite":0,"total":0.017584}},"stopReason":"toolUse","ms":7619},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":15435,"output":31,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":15466,"cost":{"input":0.030869999999999998,"output":0.00031,"cacheRead":0,"cacheWrite":0,"total":0.03118}},"stopReason":"toolUse","ms":4776},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7499,"output":31,"cacheRead":15232,"cacheWrite":0,"reasoning":0,"totalTokens":22762,"cost":{"input":0.014998,"output":0.00031,"cacheRead":0.0015232000000000002,"cacheWrite":0,"total":0.016831199999999998}},"stopReason":"toolUse","ms":5142},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7513,"output":31,"cacheRead":22528,"cacheWrite":0,"reasoning":0,"totalTokens":30072,"cost":{"input":0.015026,"output":0.00031,"cacheRead":0.0022528,"cacheWrite":0,"total":0.017588799999999998}},"stopReason":"toolUse","ms":5068},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7376,"output":31,"cacheRead":29952,"cacheWrite":0,"reasoning":0,"totalTokens":37359,"cost":{"input":0.014752,"output":0.00031,"cacheRead":0.0029952000000000004,"cacheWrite":0,"total":0.0180572}},"stopReason":"toolUse","ms":6384},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7339,"output":31,"cacheRead":37248,"cacheWrite":0,"reasoning":0,"totalTokens":44618,"cost":{"input":0.014678,"output":0.00031,"cacheRead":0.0037248000000000003,"cacheWrite":0,"total":0.0187128}},"stopReason":"toolUse","ms":5390},
+        {"role":"93efa1d0-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":3597,"output":186,"cacheRead":44416,"cacheWrite":0,"reasoning":80,"totalTokens":48199,"cost":{"input":0.007194,"output":0.00186,"cacheRead":0.0044416,"cacheWrite":0,"total":0.0134956}},"stopReason":"stop","ms":10546}
+      ],
+      "totals": {
+        "input": 1058063,
+        "output": 27942,
+        "cacheRead": 4819840,
+        "cacheWrite": 0,
+        "totalTokens": 5905845,
+        "cost": {
+          "input": 2.1161259999999995,
+          "output": 0.28099199999999985,
+          "cacheRead": 0.481984,
+          "cacheWrite": 0,
+          "total": 2.8791020000000005
+        }
+      }
+    },
+    {
+      "seed": 20261015,
+      "fixtureSha256": "96639e5253baccfdfc6c4b47b7ccf788f09e093047b93eb54d86b0c59e7e6a75",
+      "protocol": {
+        "kind": "OpenAI-based live pilot; synthetic release audit",
+        "seed": 20261015,
+        "fixtureSha256": "96639e5253baccfdfc6c4b47b7ccf788f09e093047b93eb54d86b0c59e7e6a75",
+        "models": {
+          "main": {
+            "provider": "openai",
+            "model": "gpt-6.1-sol",
+            "thinking": "xhigh"
+          },
+          "subagent": {
+            "provider": "openai",
+            "model": "gpt-6.1-sol",
+            "thinking": "high"
+          },
+          "memoryCompactor": {
+            "provider": "openai",
+            "model": "gpt-5.6-terra",
+            "thinking": "medium"
+          }
+        },
+        "piVersion": "1.0.2",
+        "node": "v26.8.2",
+        "configuredContextWindow": 272000,
+        "toolCallsRequired": 120,
+        "contextLimitPolicy": "Both arms stop before a request when Pi estimates context above its configured window. This is an experiment guard, not a claim about the OpenAI server limit.",
+        "task": "Audit a synthetic release fleet. There are 12 services and 120 chronological evidence packets, indexed 0 through 119.\nEach packet contains one authoritative DECISION_EVENT among routine request traces. Apply events in packet order; later updates replace only the fields they name. Request-trace diagnostics are not release decisions.\nA service is GO only if its approvedRelease equals its current release, errorPct <= 1.0, p95Ms <= 200, criticalVulns = 0, rollbackVerified is true, and freeze is false.\nOtherwise it is NO_GO. Use these blockingReasons exactly where applicable: approval_mismatch, error_budget, latency, security, rollback, freeze.\nRead all 120 packets using read_packet, at most six calls in one batch. Do not skip evidence. After each group of 12 packets, submit your current audit with checkpoint; mark complete=false until all packets are read. A checkpoint records your work but does not validate it or offer a way to read it back.\nAfter the final packet, submit complete=true with exactly one row for each service, including every required field and all blocking reasons. Then give a concise final report. Do not call other tools or request more work.",
+        "grader": "Exact field equality against a frozen answer key, blind to condition. No LLM judge.",
+        "started": "2026-10-13T10:26:44.854Z"
+      },
+      "completed": "2026-10-13T10:47:33.565Z",
+      "piSummaryToolResultSerialization": {
+        "packets": 120,
+        "receipts": 120,
+        "decisionEvents": 0
+      },
+      "order": ["on","off"],
+      "arms": [
+        {
+          "label": "2a957a91",
+          "compaction": true,
+          "state": "completed",
+          "readCalls": 150,
+          "uniquePackets": 108,
+          "repeatedReads": 36,
+          "successfulReadCalls": 144,
+          "failedReadCalls": 6,
+          "elapsedMs": 722318,
+          "successfulCompactions": 4,
+          "compactions": [
+            {"read":36,"reason":"threshold","success":true,"aborted":false},
+            {"read":60,"reason":"threshold","success":true,"aborted":false},
+            {"read":84,"reason":"threshold","success":true,"aborted":false},
+            {"read":108,"reason":"threshold","success":true,"aborted":false}
+          ],
+          "grade": {
+            "label": "2a957a91",
+            "correct": 98,
+            "total": 108,
+            "decisionsCorrect": 10,
+            "decisionsTotal": 12,
+            "completeClaim": false,
+            "extraRows": 0,
+            "duplicateRows": 0,
+            "mistakes": [
+              {"service":"service-00","field":"release","expected":"r15-0-a-next","actual":"r15-0-a"},
+              {"service":"service-00","field":"blockingReasons","expected":["approval_mismatch","freeze"],"actual":["freeze"]},
+              {"service":"service-05","field":"release","expected":"r15-5-a-next","actual":"r15-5-a"},
+              {"service":"service-05","field":"decision","expected":"NO_GO","actual":"GO"},
+              {"service":"service-05","field":"blockingReasons","expected":["approval_mismatch"],"actual":[]},
+              {"service":"service-09","field":"release","expected":"r15-9-a-next","actual":"r15-9-a"},
+              {"service":"service-09","field":"decision","expected":"NO_GO","actual":"GO"},
+              {"service":"service-09","field":"blockingReasons","expected":["approval_mismatch"],"actual":[]},
+              {"service":"service-10","field":"release","expected":"r15-10-a-next","actual":"r15-10-a"},
+              {"service":"service-10","field":"blockingReasons","expected":["approval_mismatch","error_budget","latency"],"actual":["error_budget","latency"]}
+            ]
+          },
+          "checkpointGrades": [
+            {"read":12,"completeClaim":false,"correct":12,"total":12,"mistakes":[]},
+            {"read":24,"completeClaim":false,"correct":24,"total":24,"mistakes":[]},
+            {"read":36,"completeClaim":false,"correct":36,"total":36,"mistakes":[]},
+            {"read":48,"completeClaim":false,"correct":48,"total":48,"mistakes":[]},
+            {"read":60,"completeClaim":false,"correct":60,"total":60,"mistakes":[]},
+            {"read":72,"completeClaim":false,"correct":72,"total":72,"mistakes":[]},
+            {"read":84,"completeClaim":false,"correct":84,"total":84,"mistakes":[]},
+            {"read":96,"completeClaim":false,"correct":84,"total":84,"mistakes":[]},
+            {"read":108,"completeClaim":false,"correct":84,"total":84,"mistakes":[]}
+          ],
+          "finalAudit": {
+            "complete": false,
+            "services": [
+              {"service":"service-00","release":"r15-0-a","approvedRelease":"r15-0-a","errorPct":1,"p95Ms":144,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["freeze"]},
+              {"service":"service-01","release":"r15-1-a","approvedRelease":"r15-1-a","errorPct":0.1,"p95Ms":126,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-02","release":"r15-2-a","approvedRelease":"r15-2-a","errorPct":1.5,"p95Ms":169,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-03","release":"r15-3-a","approvedRelease":"r15-3-a","errorPct":0,"p95Ms":263,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]},
+              {"service":"service-04","release":"r15-4-a","approvedRelease":"r15-4-a","errorPct":1.3,"p95Ms":197,"criticalVulns":0,"rollbackVerified":false,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","rollback","freeze"]},
+              {"service":"service-05","release":"r15-5-a","approvedRelease":"r15-5-a","errorPct":0,"p95Ms":159,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-06","release":"r15-6-a","approvedRelease":"r15-6-a","errorPct":1.2,"p95Ms":198,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-07","release":"r15-7-a","approvedRelease":"r15-7-a","errorPct":0.1,"p95Ms":202,"criticalVulns":1,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency","security"]},
+              {"service":"service-08","release":"r15-8-a","approvedRelease":"r15-8-a","errorPct":1.2,"p95Ms":123,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-09","release":"r15-9-a","approvedRelease":"r15-9-a","errorPct":0.8,"p95Ms":132,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-10","release":"r15-10-a","approvedRelease":"r15-10-a","errorPct":1.6,"p95Ms":254,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget","latency"]},
+              {"service":"service-11","release":"r15-11-a","approvedRelease":"r15-11-a","errorPct":0.7,"p95Ms":145,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["freeze"]}
+            ]
+          },
+          "report": "**Audit incomplete:** packets **0–107** have been read, but the evidence tool returned **“Evidence-read budget exhausted”** for packets 108–113. Packets **108–119 remain unreviewed**, so I cannot establish final decisions or submit a valid `complete=true` checkpoint.\n\nThe latest checkpoint is `complete=false`. Provisional results through packet 107:\n\n| Service | Decision | Blocking reasons |\n|---|---|---|\n| service-00 | NO_GO | `freeze` |\n| service-01 | GO | — |\n| service-02 | NO_GO | `error_budget` |\n| service-03 | NO_GO | `latency` |\n| service-04 | NO_GO | `error_budget`, `rollback`, `freeze` |\n| service-05 | GO | — |\n| service-06 | NO_GO | `error_budget` |\n| service-07 | NO_GO | `latency`, `security` |\n| service-08 | NO_GO | `error_budget` |\n| service-09 | GO | — |\n| service-10 | NO_GO | `error_budget`, `latency` |\n| service-11 | NO_GO | `freeze` |\n\n**Provisional total: 3 GO, 9 NO_GO.** These are not final release authorizations; the remaining evidence may change them.",
+          "warnings": [],
+          "usage": {
+            "requests": 39,
+            "input": 652402,
+            "cacheRead": 1697536,
+            "output": 17299,
+            "totalTokens": 2367237
+          },
+          "visibility": [
+            {"stage":"live","source":"current","packets":36,"receipts":6,"evidenceTags":0},
+            {"stage":"live","source":"retained","packets":36,"receipts":36,"evidenceTags":0},
+            {"stage":"finished","source":"current","packets":108,"receipts":108,"evidenceTags":0},
+            {"stage":"finished","source":"retained","packets":108,"receipts":108,"evidenceTags":0}
+          ]
+        },
+        {
+          "label": "56a3a4c9",
+          "compaction": false,
+          "state": "failed",
+          "readCalls": 90,
+          "uniquePackets": 90,
+          "repeatedReads": 0,
+          "successfulReadCalls": 90,
+          "failedReadCalls": 0,
+          "elapsedMs": 340775,
+          "successfulCompactions": 0,
+          "compactions": [],
+          "grade": {
+            "label": "56a3a4c9",
+            "correct": 84,
+            "total": 108,
+            "decisionsCorrect": 10,
+            "decisionsTotal": 12,
+            "completeClaim": false,
+            "extraRows": 0,
+            "duplicateRows": 0,
+            "mistakes": [
+              {"service":"service-00","field":"release","expected":"r15-0-a-next","actual":"r15-0-a"},
+              {"service":"service-00","field":"errorPct","expected":1,"actual":0.9},
+              {"service":"service-00","field":"blockingReasons","expected":["approval_mismatch","freeze"],"actual":["freeze"]},
+              {"service":"service-01","field":"errorPct","expected":0.1,"actual":0.4},
+              {"service":"service-02","field":"errorPct","expected":1.5,"actual":2},
+              {"service":"service-03","field":"errorPct","expected":0,"actual":0.2},
+              {"service":"service-04","field":"errorPct","expected":1.3,"actual":3.1},
+              {"service":"service-05","field":"release","expected":"r15-5-a-next","actual":"r15-5-a"},
+              {"service":"service-05","field":"errorPct","expected":0,"actual":2.4},
+              {"service":"service-05","field":"blockingReasons","expected":["approval_mismatch"],"actual":["error_budget"]},
+              {"service":"service-06","field":"errorPct","expected":1.2,"actual":0},
+              {"service":"service-06","field":"decision","expected":"NO_GO","actual":"GO"},
+              {"service":"service-06","field":"blockingReasons","expected":["error_budget"],"actual":[]},
+              {"service":"service-07","field":"errorPct","expected":0.1,"actual":0.4},
+              {"service":"service-08","field":"errorPct","expected":1.2,"actual":1.8},
+              {"service":"service-09","field":"release","expected":"r15-9-a-next","actual":"r15-9-a"},
+              {"service":"service-09","field":"errorPct","expected":0.8,"actual":0.9},
+              {"service":"service-09","field":"decision","expected":"NO_GO","actual":"GO"},
+              {"service":"service-09","field":"blockingReasons","expected":["approval_mismatch"],"actual":[]},
+              {"service":"service-10","field":"release","expected":"r15-10-a-next","actual":"r15-10-a"},
+              {"service":"service-10","field":"errorPct","expected":1.6,"actual":0.9},
+              {"service":"service-10","field":"blockingReasons","expected":["approval_mismatch","error_budget","latency"],"actual":["latency"]},
+              {"service":"service-11","field":"errorPct","expected":0.7,"actual":2.2},
+              {"service":"service-11","field":"blockingReasons","expected":["freeze"],"actual":["error_budget","freeze"]}
+            ]
+          },
+          "checkpointGrades": [
+            {"read":12,"completeClaim":false,"correct":12,"total":12,"mistakes":[]},
+            {"read":24,"completeClaim":false,"correct":24,"total":24,"mistakes":[]},
+            {"read":36,"completeClaim":false,"correct":36,"total":36,"mistakes":[]},
+            {"read":48,"completeClaim":false,"correct":48,"total":48,"mistakes":[]},
+            {"read":60,"completeClaim":false,"correct":60,"total":60,"mistakes":[]},
+            {"read":72,"completeClaim":false,"correct":72,"total":72,"mistakes":[]},
+            {"read":84,"completeClaim":false,"correct":84,"total":84,"mistakes":[]}
+          ],
+          "finalAudit": {
+            "complete": false,
+            "services": [
+              {"service":"service-00","release":"r15-0-a","approvedRelease":"r15-0-a","errorPct":0.9,"p95Ms":144,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["freeze"]},
+              {"service":"service-01","release":"r15-1-a","approvedRelease":"r15-1-a","errorPct":0.4,"p95Ms":126,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-02","release":"r15-2-a","approvedRelease":"r15-2-a","errorPct":2,"p95Ms":169,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-03","release":"r15-3-a","approvedRelease":"r15-3-a","errorPct":0.2,"p95Ms":263,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]},
+              {"service":"service-04","release":"r15-4-a","approvedRelease":"r15-4-a","errorPct":3.1,"p95Ms":197,"criticalVulns":0,"rollbackVerified":false,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","rollback","freeze"]},
+              {"service":"service-05","release":"r15-5-a","approvedRelease":"r15-5-a","errorPct":2.4,"p95Ms":159,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-06","release":"r15-6-a","approvedRelease":"r15-6-a","errorPct":0,"p95Ms":198,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-07","release":"r15-7-a","approvedRelease":"r15-7-a","errorPct":0.4,"p95Ms":202,"criticalVulns":1,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency","security"]},
+              {"service":"service-08","release":"r15-8-a","approvedRelease":"r15-8-a","errorPct":1.8,"p95Ms":123,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["error_budget"]},
+              {"service":"service-09","release":"r15-9-a","approvedRelease":"r15-9-a","errorPct":0.9,"p95Ms":132,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"GO","blockingReasons":[]},
+              {"service":"service-10","release":"r15-10-a","approvedRelease":"r15-10-a","errorPct":0.9,"p95Ms":254,"criticalVulns":0,"rollbackVerified":true,"freeze":false,"decision":"NO_GO","blockingReasons":["latency"]},
+              {"service":"service-11","release":"r15-11-a","approvedRelease":"r15-11-a","errorPct":2.2,"p95Ms":145,"criticalVulns":0,"rollbackVerified":true,"freeze":true,"decision":"NO_GO","blockingReasons":["error_budget","freeze"]}
+            ]
+          },
+          "report": "Task error: BENCHMARK_CONTEXT_LIMIT: Pi estimates 281735 tokens, above its configured 272000-token window.",
+          "warnings": [],
+          "usage": {
+            "requests": 22,
+            "input": 270441,
+            "cacheRead": 2799872,
+            "output": 7075,
+            "totalTokens": 3077388
+          },
+          "visibility": [
+            {"stage":"live","source":"current","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"live","source":"retained","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"finished","source":"current","packets":90,"receipts":90,"evidenceTags":0},
+            {"stage":"finished","source":"retained","packets":90,"receipts":90,"evidenceTags":0}
+          ]
+        }
+      ],
+      "commonEvidenceCheckpoints": [
+        {
+          "packets": 12,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11],
+          "on": {
+            "correct": 12,
+            "total": 12,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 12,
+            "total": 12,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 24,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],
+          "on": {
+            "correct": 24,
+            "total": 24,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 24,
+            "total": 24,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 36,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35],
+          "on": {
+            "correct": 36,
+            "total": 36,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 36,
+            "total": 36,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 48,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47],
+          "on": {
+            "correct": 48,
+            "total": 48,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 48,
+            "total": 48,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 60,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59],
+          "on": {
+            "correct": 60,
+            "total": 60,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 60,
+            "total": 60,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 72,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71],
+          "on": {
+            "correct": 72,
+            "total": 72,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 72,
+            "total": 72,
+            "mistakes": []
+          }
+        },
+        {
+          "packets": 84,
+          "indices": [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83],
+          "on": {
+            "correct": 84,
+            "total": 84,
+            "mistakes": []
+          },
+          "off": {
+            "correct": 84,
+            "total": 84,
+            "mistakes": []
+          }
+        }
+      ],
+      "parentRecovery": [
+        {
+          "label": "2a957a91-live-current",
+          "stage": "live",
+          "candidate": false,
+          "packetsRead": 36,
+          "indices": [0,12,24,35],
+          "calls": 1,
+          "correct": 1,
+          "total": 8,
+          "accessible": 1,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":null,\"evidenceTag\":null},{\"packet\":12,\"receipt\":null,\"evidenceTag\":null},{\"packet\":24,\"receipt\":null,\"evidenceTag\":null},{\"packet\":35,\"receipt\":\"receipt-7a183d14faa1242a\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-8073dc59094326e2","evidenceTag":"evidence-a55146984ffdf12b"}},
+            {"packet":12,"actual":{"packet":12,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-a02612fb5fc46a52","evidenceTag":"evidence-bce5663a61cef39e"}},
+            {"packet":24,"actual":{"packet":24,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-014a2026a35d36e7","evidenceTag":"evidence-22c4a1f80f3727bb"}},
+            {"packet":35,"actual":{"packet":35,"receipt":"receipt-7a183d14faa1242a","evidenceTag":null},"expected":{"receipt":"receipt-7a183d14faa1242a","evidenceTag":"evidence-75da4e587157c9c7"}}
+          ],
+          "attemptedPackets": 36
+        },
+        {
+          "label": "2a957a91-live-retained",
+          "stage": "live",
+          "candidate": true,
+          "packetsRead": 36,
+          "indices": [0,12,24,35],
+          "calls": 2,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-8073dc59094326e2\",\"evidenceTag\":null},{\"packet\":12,\"receipt\":\"receipt-a02612fb5fc46a52\",\"evidenceTag\":null},{\"packet\":24,\"receipt\":\"receipt-014a2026a35d36e7\",\"evidenceTag\":null},{\"packet\":35,\"receipt\":\"receipt-7a183d14faa1242a\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-8073dc59094326e2","evidenceTag":null},"expected":{"receipt":"receipt-8073dc59094326e2","evidenceTag":"evidence-a55146984ffdf12b"}},
+            {"packet":12,"actual":{"packet":12,"receipt":"receipt-a02612fb5fc46a52","evidenceTag":null},"expected":{"receipt":"receipt-a02612fb5fc46a52","evidenceTag":"evidence-bce5663a61cef39e"}},
+            {"packet":24,"actual":{"packet":24,"receipt":"receipt-014a2026a35d36e7","evidenceTag":null},"expected":{"receipt":"receipt-014a2026a35d36e7","evidenceTag":"evidence-22c4a1f80f3727bb"}},
+            {"packet":35,"actual":{"packet":35,"receipt":"receipt-7a183d14faa1242a","evidenceTag":null},"expected":{"receipt":"receipt-7a183d14faa1242a","evidenceTag":"evidence-75da4e587157c9c7"}}
+          ],
+          "attemptedPackets": 36
+        },
+        {
+          "label": "2a957a91-finished-current",
+          "stage": "finished",
+          "candidate": false,
+          "packetsRead": 108,
+          "indices": [0,38,76,113],
+          "calls": 7,
+          "correct": 3,
+          "total": 8,
+          "accessible": 3,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-8073dc59094326e2\",\"evidenceTag\":null},{\"packet\":38,\"receipt\":\"receipt-7ac4ed7f7f44544d\",\"evidenceTag\":null},{\"packet\":76,\"receipt\":\"receipt-b52e8de1edf9aed5\",\"evidenceTag\":null},{\"packet\":113,\"receipt\":null,\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-8073dc59094326e2","evidenceTag":null},"expected":{"receipt":"receipt-8073dc59094326e2","evidenceTag":"evidence-a55146984ffdf12b"}},
+            {"packet":38,"actual":{"packet":38,"receipt":"receipt-7ac4ed7f7f44544d","evidenceTag":null},"expected":{"receipt":"receipt-7ac4ed7f7f44544d","evidenceTag":"evidence-7273d124fa974a2e"}},
+            {"packet":76,"actual":{"packet":76,"receipt":"receipt-b52e8de1edf9aed5","evidenceTag":null},"expected":{"receipt":"receipt-b52e8de1edf9aed5","evidenceTag":"evidence-4c4f42a2f824c861"}},
+            {"packet":113,"actual":{"packet":113,"receipt":null,"evidenceTag":null},"expected":{"receipt":"receipt-f2d4c2bf74e6bcf7","evidenceTag":"evidence-466eb48afa8e389e"}}
+          ],
+          "attemptedPackets": 114
+        },
+        {
+          "label": "56a3a4c9-live-current",
+          "stage": "live",
+          "candidate": false,
+          "packetsRead": 90,
+          "indices": [0,30,60,89],
+          "calls": 5,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-8073dc59094326e2\",\"evidenceTag\":null},{\"packet\":30,\"receipt\":\"receipt-58c5b54c268e93b2\",\"evidenceTag\":null},{\"packet\":60,\"receipt\":\"receipt-1a76298e306bc716\",\"evidenceTag\":null},{\"packet\":89,\"receipt\":\"receipt-e53b84bc7035ba8b\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-8073dc59094326e2","evidenceTag":null},"expected":{"receipt":"receipt-8073dc59094326e2","evidenceTag":"evidence-a55146984ffdf12b"}},
+            {"packet":30,"actual":{"packet":30,"receipt":"receipt-58c5b54c268e93b2","evidenceTag":null},"expected":{"receipt":"receipt-58c5b54c268e93b2","evidenceTag":"evidence-d8b4efca342f29bb"}},
+            {"packet":60,"actual":{"packet":60,"receipt":"receipt-1a76298e306bc716","evidenceTag":null},"expected":{"receipt":"receipt-1a76298e306bc716","evidenceTag":"evidence-b09c13401646d474"}},
+            {"packet":89,"actual":{"packet":89,"receipt":"receipt-e53b84bc7035ba8b","evidenceTag":null},"expected":{"receipt":"receipt-e53b84bc7035ba8b","evidenceTag":"evidence-04dc52b64efaa1ac"}}
+          ],
+          "attemptedPackets": 90
+        },
+        {
+          "label": "56a3a4c9-finished-current",
+          "stage": "finished",
+          "candidate": false,
+          "packetsRead": 90,
+          "indices": [0,30,60,89],
+          "calls": 5,
+          "correct": 4,
+          "total": 8,
+          "accessible": 4,
+          "invented": 0,
+          "answer": "{\"answers\":[{\"packet\":0,\"receipt\":\"receipt-8073dc59094326e2\",\"evidenceTag\":null},{\"packet\":30,\"receipt\":\"receipt-58c5b54c268e93b2\",\"evidenceTag\":null},{\"packet\":60,\"receipt\":\"receipt-1a76298e306bc716\",\"evidenceTag\":null},{\"packet\":89,\"receipt\":\"receipt-e53b84bc7035ba8b\",\"evidenceTag\":null}]}",
+          "rows": [
+            {"packet":0,"actual":{"packet":0,"receipt":"receipt-8073dc59094326e2","evidenceTag":null},"expected":{"receipt":"receipt-8073dc59094326e2","evidenceTag":"evidence-a55146984ffdf12b"}},
+            {"packet":30,"actual":{"packet":30,"receipt":"receipt-58c5b54c268e93b2","evidenceTag":null},"expected":{"receipt":"receipt-58c5b54c268e93b2","evidenceTag":"evidence-d8b4efca342f29bb"}},
+            {"packet":60,"actual":{"packet":60,"receipt":"receipt-1a76298e306bc716","evidenceTag":null},"expected":{"receipt":"receipt-1a76298e306bc716","evidenceTag":"evidence-b09c13401646d474"}},
+            {"packet":89,"actual":{"packet":89,"receipt":"receipt-e53b84bc7035ba8b","evidenceTag":null},"expected":{"receipt":"receipt-e53b84bc7035ba8b","evidenceTag":"evidence-04dc52b64efaa1ac"}}
+          ],
+          "attemptedPackets": 90
+        }
+      ],
+      "requests": [
+        {"role":"2a957a91:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1076,"output":140,"cacheRead":0,"cacheWrite":0,"reasoning":12,"totalTokens":1216,"cost":{"input":0.002152,"output":0.00168,"cacheRead":0,"cacheWrite":0,"total":0.003832}},"stopReason":"stop"},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1031,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1135,"cost":{"input":0.002062,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.003102}},"stopReason":"toolUse","ms":6304},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":19635,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":19739,"cost":{"input":0.03927,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.04031}},"stopReason":"toolUse","ms":6362},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18793,"output":754,"cacheRead":19456,"cacheWrite":0,"reasoning":0,"totalTokens":39003,"cost":{"input":0.037586,"output":0.007540000000000001,"cacheRead":0.0019456000000000002,"cacheWrite":0,"total":0.0470716}},"stopReason":"toolUse","ms":27323},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":873,"output":104,"cacheRead":38144,"cacheWrite":0,"reasoning":0,"totalTokens":39121,"cost":{"input":0.001746,"output":0.0010400000000000001,"cacheRead":0.0038144000000000003,"cacheWrite":0,"total":0.006600400000000001}},"stopReason":"toolUse","ms":6907},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18719,"output":104,"cacheRead":38912,"cacheWrite":0,"reasoning":0,"totalTokens":57735,"cost":{"input":0.037438,"output":0.0010400000000000001,"cacheRead":0.0038912000000000005,"cacheWrite":0,"total":0.042369199999999996}},"stopReason":"toolUse","ms":9783},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18638,"output":789,"cacheRead":57472,"cacheWrite":0,"reasoning":0,"totalTokens":76899,"cost":{"input":0.037276,"output":0.007890000000000001,"cacheRead":0.005747200000000001,"cacheWrite":0,"total":0.0509132}},"stopReason":"toolUse","ms":27859},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1009,"output":104,"cacheRead":75904,"cacheWrite":0,"reasoning":0,"totalTokens":77017,"cost":{"input":0.002018,"output":0.0010400000000000001,"cacheRead":0.007590400000000001,"cacheWrite":0,"total":0.0106484}},"stopReason":"toolUse","ms":9921},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18677,"output":104,"cacheRead":76800,"cacheWrite":0,"reasoning":0,"totalTokens":95581,"cost":{"input":0.037354,"output":0.0010400000000000001,"cacheRead":0.007680000000000001,"cacheWrite":0,"total":0.046074}},"stopReason":"toolUse","ms":8007},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18721,"output":798,"cacheRead":95360,"cacheWrite":0,"reasoning":0,"totalTokens":114879,"cost":{"input":0.037441999999999996,"output":0.007980000000000001,"cacheRead":0.009536000000000001,"cacheWrite":0,"total":0.054958}},"stopReason":"toolUse","ms":27488},
+        {"role":"2a957a91:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21093,"output":1044,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":22137,"cost":{"input":0.042186,"output":0.010440000000000001,"cacheRead":0,"cacheWrite":0,"total":0.052626000000000006}},"stopReason":"stop","ms":36550},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21140,"output":136,"cacheRead":0,"cacheWrite":0,"reasoning":30,"totalTokens":21276,"cost":{"input":0.04228,"output":0.00136,"cacheRead":0,"cacheWrite":0,"total":0.04364}},"stopReason":"toolUse","ms":8032},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":39736,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":39840,"cost":{"input":0.079472,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.080512}},"stopReason":"toolUse","ms":6589},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18780,"output":104,"cacheRead":39552,"cacheWrite":0,"reasoning":0,"totalTokens":58436,"cost":{"input":0.037559999999999996,"output":0.0010400000000000001,"cacheRead":0.003955200000000001,"cacheWrite":0,"total":0.042555199999999994}},"stopReason":"toolUse","ms":10797},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18737,"output":798,"cacheRead":58240,"cacheWrite":0,"reasoning":0,"totalTokens":77775,"cost":{"input":0.037474,"output":0.007980000000000001,"cacheRead":0.005824,"cacheWrite":0,"total":0.051278000000000004}},"stopReason":"toolUse","ms":27574},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":989,"output":104,"cacheRead":76800,"cacheWrite":0,"reasoning":0,"totalTokens":77893,"cost":{"input":0.0019779999999999997,"output":0.0010400000000000001,"cacheRead":0.007680000000000001,"cacheWrite":0,"total":0.010698000000000001}},"stopReason":"toolUse","ms":6797},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18648,"output":104,"cacheRead":77696,"cacheWrite":0,"reasoning":0,"totalTokens":96448,"cost":{"input":0.037295999999999996,"output":0.0010400000000000001,"cacheRead":0.007769600000000001,"cacheWrite":0,"total":0.0461056}},"stopReason":"toolUse","ms":8264},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18657,"output":800,"cacheRead":96256,"cacheWrite":0,"reasoning":0,"totalTokens":115713,"cost":{"input":0.037314,"output":0.008,"cacheRead":0.009625600000000002,"cacheWrite":0,"total":0.054939600000000005}},"stopReason":"toolUse","ms":28094},
+        {"role":"2a957a91:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21970,"output":1688,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":23658,"cost":{"input":0.04394,"output":0.016880000000000003,"cacheRead":0,"cacheWrite":0,"total":0.06082}},"stopReason":"stop","ms":57370},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21738,"output":121,"cacheRead":0,"cacheWrite":0,"reasoning":15,"totalTokens":21859,"cost":{"input":0.043476,"output":0.0012100000000000001,"cacheRead":0,"cacheWrite":0,"total":0.044686000000000003}},"stopReason":"toolUse","ms":8226},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18678,"output":104,"cacheRead":21632,"cacheWrite":0,"reasoning":0,"totalTokens":40414,"cost":{"input":0.037356,"output":0.0010400000000000001,"cacheRead":0.0021632,"cacheWrite":0,"total":0.0405592}},"stopReason":"toolUse","ms":6504},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18674,"output":104,"cacheRead":40192,"cacheWrite":0,"reasoning":0,"totalTokens":58970,"cost":{"input":0.037348,"output":0.0010400000000000001,"cacheRead":0.0040192000000000005,"cacheWrite":0,"total":0.0424072}},"stopReason":"toolUse","ms":6885},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18645,"output":774,"cacheRead":58752,"cacheWrite":0,"reasoning":0,"totalTokens":78171,"cost":{"input":0.03729,"output":0.00774,"cacheRead":0.0058752000000000006,"cacheWrite":0,"total":0.0509052}},"stopReason":"toolUse","ms":28734},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":873,"output":104,"cacheRead":77312,"cacheWrite":0,"reasoning":0,"totalTokens":78289,"cost":{"input":0.001746,"output":0.0010400000000000001,"cacheRead":0.007731200000000001,"cacheWrite":0,"total":0.0105172}},"stopReason":"toolUse","ms":9441},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18667,"output":104,"cacheRead":78080,"cacheWrite":0,"reasoning":0,"totalTokens":96851,"cost":{"input":0.037334,"output":0.0010400000000000001,"cacheRead":0.007808000000000001,"cacheWrite":0,"total":0.046182}},"stopReason":"toolUse","ms":8235},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18595,"output":781,"cacheRead":96640,"cacheWrite":0,"reasoning":0,"totalTokens":116016,"cost":{"input":0.03719,"output":0.007810000000000001,"cacheRead":0.009664,"cacheWrite":0,"total":0.054664}},"stopReason":"toolUse","ms":34427},
+        {"role":"2a957a91:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22558,"output":1994,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":24552,"cost":{"input":0.045115999999999996,"output":0.019940000000000003,"cacheRead":0,"cacheWrite":0,"total":0.065056}},"stopReason":"stop","ms":62771},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":21944,"output":130,"cacheRead":0,"cacheWrite":0,"reasoning":24,"totalTokens":22074,"cost":{"input":0.043887999999999996,"output":0.0013000000000000002,"cacheRead":0,"cacheWrite":0,"total":0.045188}},"stopReason":"toolUse","ms":8941},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18772,"output":104,"cacheRead":21760,"cacheWrite":0,"reasoning":0,"totalTokens":40636,"cost":{"input":0.037544,"output":0.0010400000000000001,"cacheRead":0.002176,"cacheWrite":0,"total":0.04076}},"stopReason":"toolUse","ms":8846},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18669,"output":104,"cacheRead":40448,"cacheWrite":0,"reasoning":0,"totalTokens":59221,"cost":{"input":0.037337999999999996,"output":0.0010400000000000001,"cacheRead":0.0040448,"cacheWrite":0,"total":0.0424228}},"stopReason":"toolUse","ms":8126},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18682,"output":781,"cacheRead":59008,"cacheWrite":0,"reasoning":0,"totalTokens":78471,"cost":{"input":0.037364,"output":0.007810000000000001,"cacheRead":0.0059008,"cacheWrite":0,"total":0.051074800000000004}},"stopReason":"toolUse","ms":27627},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":917,"output":104,"cacheRead":77568,"cacheWrite":0,"reasoning":0,"totalTokens":78589,"cost":{"input":0.001834,"output":0.0010400000000000001,"cacheRead":0.0077568,"cacheWrite":0,"total":0.0106308}},"stopReason":"toolUse","ms":7413},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18679,"output":104,"cacheRead":78336,"cacheWrite":0,"reasoning":0,"totalTokens":97119,"cost":{"input":0.037357999999999995,"output":0.0010400000000000001,"cacheRead":0.007833600000000001,"cacheWrite":0,"total":0.0462316}},"stopReason":"toolUse","ms":9482},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18707,"output":779,"cacheRead":96896,"cacheWrite":0,"reasoning":0,"totalTokens":116382,"cost":{"input":0.037413999999999996,"output":0.007790000000000001,"cacheRead":0.009689600000000001,"cacheWrite":0,"total":0.054893599999999994}},"stopReason":"toolUse","ms":28517},
+        {"role":"2a957a91:subagent:pi-compaction","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22864,"output":2278,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":25142,"cost":{"input":0.045728,"output":0.02278,"cacheRead":0,"cacheWrite":0,"total":0.068508}},"stopReason":"stop","ms":73308},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":22326,"output":143,"cacheRead":0,"cacheWrite":0,"reasoning":37,"totalTokens":22469,"cost":{"input":0.044652,"output":0.00143,"cacheRead":0,"cacheWrite":0,"total":0.046082}},"stopReason":"toolUse","ms":7733},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18806,"output":138,"cacheRead":22144,"cacheWrite":0,"reasoning":32,"totalTokens":41088,"cost":{"input":0.037612,"output":0.0013800000000000002,"cacheRead":0.0022144,"cacheWrite":0,"total":0.0412064}},"stopReason":"toolUse","ms":7920},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18725,"output":104,"cacheRead":40832,"cacheWrite":0,"reasoning":0,"totalTokens":59661,"cost":{"input":0.03745,"output":0.0010400000000000001,"cacheRead":0.0040832,"cacheWrite":0,"total":0.0425732}},"stopReason":"toolUse","ms":11170},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18695,"output":121,"cacheRead":59392,"cacheWrite":0,"reasoning":15,"totalTokens":78208,"cost":{"input":0.03739,"output":0.0012100000000000001,"cacheRead":0.0059392,"cacheWrite":0,"total":0.0445392}},"stopReason":"toolUse","ms":10501},
+        {"role":"2a957a91:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":342,"output":476,"cacheRead":77952,"cacheWrite":0,"reasoning":193,"totalTokens":78770,"cost":{"input":0.0006839999999999999,"output":0.00476,"cacheRead":0.0077952,"cacheWrite":0,"total":0.0132392}},"stopReason":"stop","ms":20976},
+        {"role":"56a3a4c9:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1076,"output":136,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1212,"cost":{"input":0.002152,"output":0.001632,"cacheRead":0,"cacheWrite":0,"total":0.003784}},"stopReason":"stop"},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":1043,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1147,"cost":{"input":0.0020859999999999997,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.003126}},"stopReason":"toolUse","ms":6115},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":19647,"output":104,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":19751,"cost":{"input":0.039293999999999996,"output":0.0010400000000000001,"cacheRead":0,"cacheWrite":0,"total":0.040333999999999995}},"stopReason":"toolUse","ms":7927},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18805,"output":754,"cacheRead":19456,"cacheWrite":0,"reasoning":0,"totalTokens":39015,"cost":{"input":0.03761,"output":0.007540000000000001,"cacheRead":0.0019456000000000002,"cacheWrite":0,"total":0.047095599999999994}},"stopReason":"toolUse","ms":26793},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":885,"output":104,"cacheRead":38144,"cacheWrite":0,"reasoning":0,"totalTokens":39133,"cost":{"input":0.0017699999999999999,"output":0.0010400000000000001,"cacheRead":0.0038144000000000003,"cacheWrite":0,"total":0.006624400000000001}},"stopReason":"toolUse","ms":8540},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18731,"output":104,"cacheRead":38912,"cacheWrite":0,"reasoning":0,"totalTokens":57747,"cost":{"input":0.037461999999999995,"output":0.0010400000000000001,"cacheRead":0.0038912000000000005,"cacheWrite":0,"total":0.04239319999999999}},"stopReason":"toolUse","ms":8158},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18650,"output":789,"cacheRead":57472,"cacheWrite":0,"reasoning":0,"totalTokens":76911,"cost":{"input":0.0373,"output":0.007890000000000001,"cacheRead":0.005747200000000001,"cacheWrite":0,"total":0.0509372}},"stopReason":"toolUse","ms":28626},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":893,"output":104,"cacheRead":76032,"cacheWrite":0,"reasoning":0,"totalTokens":77029,"cost":{"input":0.0017859999999999998,"output":0.0010400000000000001,"cacheRead":0.007603200000000001,"cacheWrite":0,"total":0.010429200000000001}},"stopReason":"toolUse","ms":10267},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18689,"output":104,"cacheRead":76800,"cacheWrite":0,"reasoning":0,"totalTokens":95593,"cost":{"input":0.037378,"output":0.0010400000000000001,"cacheRead":0.007680000000000001,"cacheWrite":0,"total":0.046098}},"stopReason":"toolUse","ms":7504},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18733,"output":798,"cacheRead":95360,"cacheWrite":0,"reasoning":0,"totalTokens":114891,"cost":{"input":0.037466,"output":0.007980000000000001,"cacheRead":0.009536000000000001,"cacheWrite":0,"total":0.054982}},"stopReason":"toolUse","ms":29496},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":985,"output":104,"cacheRead":113920,"cacheWrite":0,"reasoning":0,"totalTokens":115009,"cost":{"input":0.00197,"output":0.0010400000000000001,"cacheRead":0.011392000000000001,"cacheWrite":0,"total":0.014402000000000002}},"stopReason":"toolUse","ms":8328},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18685,"output":104,"cacheRead":114816,"cacheWrite":0,"reasoning":0,"totalTokens":133605,"cost":{"input":0.03737,"output":0.0010400000000000001,"cacheRead":0.011481600000000002,"cacheWrite":0,"total":0.0498916}},"stopReason":"toolUse","ms":9801},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18770,"output":798,"cacheRead":133376,"cacheWrite":0,"reasoning":0,"totalTokens":152944,"cost":{"input":0.03754,"output":0.007980000000000001,"cacheRead":0.013337600000000002,"cacheWrite":0,"total":0.058857599999999996}},"stopReason":"toolUse","ms":28725},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":894,"output":104,"cacheRead":152064,"cacheWrite":0,"reasoning":0,"totalTokens":153062,"cost":{"input":0.0017879999999999999,"output":0.0010400000000000001,"cacheRead":0.015206400000000002,"cacheWrite":0,"total":0.018034400000000003}},"stopReason":"toolUse","ms":7646},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18681,"output":104,"cacheRead":152832,"cacheWrite":0,"reasoning":0,"totalTokens":171617,"cost":{"input":0.037362,"output":0.0010400000000000001,"cacheRead":0.015283200000000002,"cacheWrite":0,"total":0.0536852}},"stopReason":"toolUse","ms":8050},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18690,"output":800,"cacheRead":171392,"cacheWrite":0,"reasoning":0,"totalTokens":190882,"cost":{"input":0.03738,"output":0.008,"cacheRead":0.0171392,"cacheWrite":0,"total":0.0625192}},"stopReason":"toolUse","ms":28885},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":944,"output":104,"cacheRead":189952,"cacheWrite":0,"reasoning":0,"totalTokens":191000,"cost":{"input":0.001888,"output":0.0010400000000000001,"cacheRead":0.0189952,"cacheWrite":0,"total":0.0219232}},"stopReason":"toolUse","ms":7622},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18732,"output":104,"cacheRead":190720,"cacheWrite":0,"reasoning":0,"totalTokens":209556,"cost":{"input":0.037464,"output":0.0010400000000000001,"cacheRead":0.019072000000000002,"cacheWrite":0,"total":0.057576}},"stopReason":"toolUse","ms":6853},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18703,"output":795,"cacheRead":209280,"cacheWrite":0,"reasoning":15,"totalTokens":228778,"cost":{"input":0.037406,"output":0.00795,"cacheRead":0.020928000000000002,"cacheWrite":0,"total":0.06628400000000001}},"stopReason":"toolUse","ms":29907},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":952,"output":104,"cacheRead":227840,"cacheWrite":0,"reasoning":0,"totalTokens":228896,"cost":{"input":0.0019039999999999999,"output":0.0010400000000000001,"cacheRead":0.022784000000000002,"cacheWrite":0,"total":0.025728}},"stopReason":"toolUse","ms":15572},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18746,"output":104,"cacheRead":228608,"cacheWrite":0,"reasoning":0,"totalTokens":247458,"cost":{"input":0.037492,"output":0.0010400000000000001,"cacheRead":0.0228608,"cacheWrite":0,"total":0.0613928}},"stopReason":"toolUse","ms":8472},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":18674,"output":781,"cacheRead":247168,"cacheWrite":0,"reasoning":0,"totalTokens":266623,"cost":{"input":0.037348,"output":0.007810000000000001,"cacheRead":0.0247168,"cacheWrite":0,"total":0.0698748}},"stopReason":"toolUse","ms":33919},
+        {"role":"56a3a4c9:subagent","model":"gpt-6.1-sol","thinking":"high","usage":{"input":909,"output":104,"cacheRead":265728,"cacheWrite":0,"reasoning":0,"totalTokens":266741,"cost":{"input":0.001818,"output":0.0010400000000000001,"cacheRead":0.0265728,"cacheWrite":0,"total":0.0294308}},"stopReason":"toolUse","ms":7505},
+        {"role":"2a957a91-live-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":119,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1201,"cost":{"input":0.0021639999999999997,"output":0.001428,"cacheRead":0,"cacheWrite":0,"total":0.0035919999999999997}},"stopReason":"stop"},
+        {"role":"2a957a91-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":910,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":931,"cost":{"input":0.00182,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.00203}},"stopReason":"toolUse","ms":4635},
+        {"role":"2a957a91-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":3039,"output":373,"cacheRead":0,"cacheWrite":0,"reasoning":296,"totalTokens":3412,"cost":{"input":0.006078,"output":0.0037300000000000002,"cacheRead":0,"cacheWrite":0,"total":0.009808}},"stopReason":"stop","ms":14705},
+        {"role":"2a957a91-live-retained:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":119,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1201,"cost":{"input":0.0021639999999999997,"output":0.001428,"cacheRead":0,"cacheWrite":0,"total":0.0035919999999999997}},"stopReason":"stop"},
+        {"role":"2a957a91-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":910,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":931,"cost":{"input":0.00182,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.00203}},"stopReason":"toolUse","ms":4358},
+        {"role":"2a957a91-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8114,"output":31,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":8145,"cost":{"input":0.016228,"output":0.00031,"cacheRead":0,"cacheWrite":0,"total":0.016538}},"stopReason":"toolUse","ms":5574},
+        {"role":"2a957a91-live-retained:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":4985,"output":201,"cacheRead":7936,"cacheWrite":0,"reasoning":95,"totalTokens":13122,"cost":{"input":0.00997,"output":0.00201,"cacheRead":0.0007936000000000001,"cacheWrite":0,"total":0.0127736}},"stopReason":"stop","ms":9398},
+        {"role":"2a957a91-finished-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1102,"output":120,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1222,"cost":{"input":0.002204,"output":0.00144,"cacheRead":0,"cacheWrite":0,"total":0.0036439999999999997}},"stopReason":"stop"},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":911,"output":21,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":932,"cost":{"input":0.0018219999999999998,"output":0.00021,"cacheRead":0,"cacheWrite":0,"total":0.002032}},"stopReason":"toolUse","ms":3660},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8115,"output":126,"cacheRead":0,"cacheWrite":0,"reasoning":93,"totalTokens":8241,"cost":{"input":0.016229999999999998,"output":0.00126,"cacheRead":0,"cacheWrite":0,"total":0.01749}},"stopReason":"toolUse","ms":7219},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":15457,"output":31,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":15488,"cost":{"input":0.030913999999999997,"output":0.00031,"cacheRead":0,"cacheWrite":0,"total":0.031224}},"stopReason":"toolUse","ms":4174},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7383,"output":31,"cacheRead":15360,"cacheWrite":0,"reasoning":0,"totalTokens":22774,"cost":{"input":0.014766,"output":0.00031,"cacheRead":0.001536,"cacheWrite":0,"total":0.016612}},"stopReason":"toolUse","ms":12231},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7367,"output":31,"cacheRead":22656,"cacheWrite":0,"reasoning":0,"totalTokens":30054,"cost":{"input":0.014733999999999999,"output":0.00031,"cacheRead":0.0022656,"cacheWrite":0,"total":0.017309599999999998}},"stopReason":"toolUse","ms":5802},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7445,"output":31,"cacheRead":29824,"cacheWrite":0,"reasoning":0,"totalTokens":37300,"cost":{"input":0.014889999999999999,"output":0.00031,"cacheRead":0.0029824,"cacheWrite":0,"total":0.018182399999999998}},"stopReason":"toolUse","ms":5213},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7434,"output":31,"cacheRead":37120,"cacheWrite":0,"reasoning":0,"totalTokens":44585,"cost":{"input":0.014868,"output":0.00031,"cacheRead":0.0037120000000000005,"cacheWrite":0,"total":0.01889}},"stopReason":"toolUse","ms":5032},
+        {"role":"2a957a91-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":3359,"output":162,"cacheRead":44416,"cacheWrite":0,"reasoning":64,"totalTokens":47937,"cost":{"input":0.006718,"output":0.0016200000000000001,"cacheRead":0.0044416,"cacheWrite":0,"total":0.0127796}},"stopReason":"stop","ms":8363},
+        {"role":"56a3a4c9-live-current:memory-compactor","model":"gpt-5.6-terra","thinking":"medium","usage":{"input":1082,"output":115,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":1197,"cost":{"input":0.0021639999999999997,"output":0.00138,"cacheRead":0,"cacheWrite":0,"total":0.0035439999999999994}},"stopReason":"stop"},
+        {"role":"56a3a4c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":905,"output":20,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":925,"cost":{"input":0.00181,"output":0.0002,"cacheRead":0,"cacheWrite":0,"total":0.00201}},"stopReason":"toolUse","ms":5043},
+        {"role":"56a3a4c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8108,"output":101,"cacheRead":0,"cacheWrite":0,"reasoning":69,"totalTokens":8209,"cost":{"input":0.016215999999999998,"output":0.00101,"cacheRead":0,"cacheWrite":0,"total":0.017225999999999998}},"stopReason":"toolUse","ms":7564},
+        {"role":"56a3a4c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7501,"output":30,"cacheRead":7936,"cacheWrite":0,"reasoning":0,"totalTokens":15467,"cost":{"input":0.015002,"output":0.00030000000000000003,"cacheRead":0.0007936000000000001,"cacheWrite":0,"total":0.016095599999999998}},"stopReason":"toolUse","ms":4731},
+        {"role":"56a3a4c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7495,"output":30,"cacheRead":15232,"cacheWrite":0,"reasoning":0,"totalTokens":22757,"cost":{"input":0.01499,"output":0.00030000000000000003,"cacheRead":0.0015232000000000002,"cacheWrite":0,"total":0.0168132}},"stopReason":"toolUse","ms":7701},
+        {"role":"56a3a4c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7461,"output":30,"cacheRead":22528,"cacheWrite":0,"reasoning":0,"totalTokens":30019,"cost":{"input":0.014922,"output":0.00030000000000000003,"cacheRead":0.0022528,"cacheWrite":0,"total":0.0174748}},"stopReason":"toolUse","ms":6682},
+        {"role":"56a3a4c9-live-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":713,"output":186,"cacheRead":29824,"cacheWrite":0,"reasoning":79,"totalTokens":30723,"cost":{"input":0.001426,"output":0.00186,"cacheRead":0.0029824,"cacheWrite":0,"total":0.0062684}},"stopReason":"stop","ms":10102},
+        {"role":"56a3a4c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":821,"output":29,"cacheRead":0,"cacheWrite":0,"reasoning":0,"totalTokens":850,"cost":{"input":0.001642,"output":0.00029,"cacheRead":0,"cacheWrite":0,"total":0.0019320000000000001}},"stopReason":"toolUse","ms":3643},
+        {"role":"56a3a4c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":8033,"output":66,"cacheRead":0,"cacheWrite":0,"reasoning":34,"totalTokens":8099,"cost":{"input":0.016066,"output":0.0006600000000000001,"cacheRead":0,"cacheWrite":0,"total":0.016726}},"stopReason":"toolUse","ms":6170},
+        {"role":"56a3a4c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7391,"output":30,"cacheRead":7936,"cacheWrite":0,"reasoning":0,"totalTokens":15357,"cost":{"input":0.014782,"output":0.00030000000000000003,"cacheRead":0.0007936000000000001,"cacheWrite":0,"total":0.0158756}},"stopReason":"toolUse","ms":5787},
+        {"role":"56a3a4c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7385,"output":30,"cacheRead":15232,"cacheWrite":0,"reasoning":0,"totalTokens":22647,"cost":{"input":0.01477,"output":0.00030000000000000003,"cacheRead":0.0015232000000000002,"cacheWrite":0,"total":0.0165932}},"stopReason":"toolUse","ms":5310},
+        {"role":"56a3a4c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":7351,"output":30,"cacheRead":22528,"cacheWrite":0,"reasoning":0,"totalTokens":29909,"cost":{"input":0.014702,"output":0.00030000000000000003,"cacheRead":0.0022528,"cacheWrite":0,"total":0.0172548}},"stopReason":"toolUse","ms":5039},
+        {"role":"56a3a4c9-finished-current:parent","model":"gpt-6.1-sol","thinking":"xhigh","usage":{"input":731,"output":105,"cacheRead":29696,"cacheWrite":0,"reasoning":0,"totalTokens":30532,"cost":{"input":0.001462,"output":0.0010500000000000002,"cacheRead":0.0029696,"cacheWrite":0,"total":0.0054816000000000005}},"stopReason":"stop","ms":6060}
+      ],
+      "totals": {
+        "input": 1068667,
+        "output": 26921,
+        "cacheRead": 4805632,
+        "cacheWrite": 0,
+        "totalTokens": 5901220,
+        "cost": {
+          "input": 2.1373339999999987,
+          "output": 0.2707080000000001,
+          "cacheRead": 0.4805632,
+          "cacheWrite": 0,
+          "total": 2.8886051999999993
+        }
+      }
+    }
+  ]
+}
