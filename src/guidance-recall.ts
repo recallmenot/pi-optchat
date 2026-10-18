@@ -42,10 +42,10 @@ export class GuidanceRequests {
       }
       if (request.request !== id || typeof request.agent !== 'string') throw new Error(`Damaged guidance request: ${path}`);
       const revision = this.archive.revision(request.revision);
-      return { ...request, work: [...new Set(refs.filter(ref => ref.request === id).flatMap(ref => ref.work ? [ref.work] : []))], files: revision.files };
+      return { ...request, work: [...new Set(refs.filter(ref => ref.request === id).flatMap(ref => ref.work ? [ref.work] : []))], files: revision.files, missingPins: revision.unavailable ?? [] };
     });
     const descriptions = records.map(record => 'unavailable' in record ? `Request ${record.request}: ${record.unavailable}` :
-      `Request ${record.request}, agent ${record.agent}${record.work.length ? ` (${record.work.join('; ')})` : ''}:\n${record.files.map((file, index) => `${index + 1}. ${file.path} (${file.scope}) → ${file.supplied}`).join('\n') || '(no applicable guidance sources)'}`);
+      `Request ${record.request}, agent ${record.agent}${record.work.length ? ` (${record.work.join('; ')})` : ''}:\n${record.files.map((file, index) => `${index + 1}. ${file.path} (${file.scope}${file.pin ? `; ${file.pin.block}; ${file.pin.kind}; ${file.pin.purpose}` : '; automatic pre-memory guidance'}) → ${file.supplied}`).join('\n') || '(no supplied files)'}${record.missingPins.map(issue => `\nNOT supplied: ${issue.pin.path} (${issue.pin.block}): ${issue.reason}`).join('')}`);
     let text = descriptions.join('\n\n');
     if (text.length > 4000) {
       const json = JSON.stringify(records, null, 2), id = createHash('sha256').update(json).digest('hex');

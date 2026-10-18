@@ -6,6 +6,7 @@ The README covers the basics. This page has the rest.
 
 - The profile's memory view (frozen at launch), its instructions, read-only `zoom`/`date`, and normal coding tools plus your installed extensions (except pi-optchat itself).
 - The Pi built-in extensions the main session loaded: MCP, codemode and tool search.
+- Current project pins and inherited task pins for its own project/worktree, plus `pin_file`, `unpin_file` and `pinned_files`. A child may add or override a task pin locally without changing its parent or siblings. Project-scope changes are shared with all agents in that worktree/profile; they take effect at each agent's next request. Task pins do not follow a child into an unrelated project. Saved task registrations and inheritance survive resume and Pi compaction. See [pinned context files](pinned-files.md).
 
 ### MCP servers
 

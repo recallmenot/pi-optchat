@@ -121,6 +121,14 @@ Ask in plain words, for example: "Spawn an agent to investigate this repository 
 
 More (MCP inheritance, per-task models, report formats, the "agents at work" status line, resume rules): [docs/subagents.md](docs/subagents.md).
 
+## Pinned context files
+
+An agent can keep an important specification or active plan fully available while it works, across memory refreshes, subagent compaction and restarts. The prompt names every effective pin, its purpose and its role as requirements, a plan or reference material. Agents are told to pin sparingly, keep files while needed, and release them when the work no longer needs them.
+
+The agent tools are `pin_file({path, block, kind, purpose, scope?})`, `unpin_file({path, scope?})` and `pinned_files()`. Choose `pre-memory` for a stable specification and `post-memory` for a frequently changing plan. Registering in the other block moves the file; unregistering works from either block. AGENTS.md stays automatic before memory. Pinning does not confer new instruction priority.
+
+Task scope is the default: it follows that session or resumed subagent and its descendants in the same project. Project scope shares a registration across sessions in the same worktree and profile. Files are reread for each request; edits get the existing guidance transition and historical recall behavior. Missing or oversized pins are clearly marked unavailable, with recovery instructions, rather than silently truncated or replaced with old contents. [Scope, examples and limits](docs/pinned-files.md).
+
 ## Agents, usage and activity inspector
 
 An **Agents | Usage | Activity** bar sits below the input.
@@ -202,6 +210,7 @@ Profile data lives in `~/.optchat/profiles/<name>/` (override the root with `OPT
 | `active-memory.json`, `memories/<id>/` | After an import: pointer to the active `main/` and `tree/`. Older generations are kept. |
 | `imports/pending.json` | Resumable import state |
 | `AGENTS.md` | Profile instructions |
+| `context-pins.json` | Project/task file registrations, placements and inheritance |
 | `guidance/` | Deduplicated guidance contents, source metadata, ordered revisions and request associations |
 | `config.json` | Compactor and subagent models |
 | `pending-inputs.json`, `pending-reports.json` | Recovery journals |
@@ -231,7 +240,7 @@ Pipe names and permissions: [docs/storage.md](docs/storage.md#windows-difference
 - **Profiles separate memory and instructions only.** Agents keep full filesystem access and share provider credentials.
 - **Use worktrees** when parallel agents edit the same repository; they share the filesystem.
 - **Instructions**: before every model request, the main agent and subagents check applicable global, ancestor/project and profile guidance, in that order, using Pi's file priority (`AGENTS.override.md`, `AGENTS.md`, `AGENTS.MD`, `CLAUDE.md`, `CLAUDE.MD`) and worktree shadowing. The profile's `AGENTS.md` comes last; a newer file revision does not override an explicit user instruction. Skills remain available; prompt templates work in the main session only.
-- **Changing guidance**: edits apply at each agent's next request, including tool continuations, report turns and resumed work. Stable instructions precede complete current guidance, then memory and recent work. A real change adds a short notice after the recent work, with mechanical excerpts and a path to the previous copy. That notice stays at its original boundary; after refresh it is labeled as an earlier transition. Unchanged text and timestamp-only touches add nothing. No manual reread is needed.
+- **Changing guidance**: edits apply at each agent's next request, including tool continuations, report turns and resumed work. The order is stable instructions → guidance and pre-memory pins → memory → post-memory pins → recent work. A real change adds a short notice after the recent work, with mechanical excerpts and a path to the previous copy. That notice stays at its original boundary; after refresh it is labeled as an earlier transition. Unchanged text and timestamp-only touches add nothing. No manual reread is needed.
 - **Guidance failures**: missing sources are removed at the next request; broken links, read errors, invalid UTF-8, files or combined guidance over 1 MB, and archive-write failures stop that request. Guidance is never silently truncated or replaced by stale text. Copies live under `guidance/sources/`, retain the original basename and source path, and share content objects through hard links (the profile filesystem must support them). Original bytes and BOM-stripped supplied text are distinguished. Keep this directory with your profile; no automatic archive pruning occurs.
 - **Historical guidance**: `zoom(id, 1)` and paged subagent transcripts expose references to the exact guidance associated with the original work, including after restart, source removal or an import rebuild. References appear only in the model’s recall result; they are not added to the memory view, logged tool text or summaries. Opening a historical copy explains earlier work and does not activate its instructions. Older work recorded before this feature has no invented association.
 - **Tab title**: `π personal` while waiting for you, `● π personal` while the agent works, plus `· 2 agents` while subagents run. A connected window shows `↳ personal`, `● ↳ personal`, then `↳ personal · done` or `↳ personal · disconnected`. OptChat replaces Pi's default title and puts its own back when Pi resets it (new session, reload, rename).
@@ -277,9 +286,10 @@ npm run check      # type check
 npm test           # offline tests, no paid model calls
 npm run test:live  # paid Anthropic calls on synthetic data in a disposable profile
 npm run test:guidance:live # paid guidance/cache validation; defaults to openai/gpt-6.1-sol
+npm run test:pins:live # paid pin awareness, file updates and two-block cache validation
 ```
 
-The guidance live check accepts `OPTCHAT_GUIDANCE_PROVIDER` and `OPTCHAT_GUIDANCE_MODEL`. It uses synthetic files, checks SQLite → PostgreSQL behavior and interpretation of earlier work, and prints the provider’s cache counters for ordinary requests and edits. Offline tests inspect the actual Anthropic, OpenAI Responses and Chat Completions adapters; those checks establish placement and stable payloads, not a guaranteed cache hit rate or cost saving.
+Both file-context live checks accept `OPTCHAT_GUIDANCE_PROVIDER` and `OPTCHAT_GUIDANCE_MODEL`. They use synthetic files, check current requirements and interpretation of earlier work, and print the provider’s cache counters for ordinary requests and edits. The pins check also asks which files are pinned, when to release them, and whether ordinary one-off reads should be pinned. Offline tests inspect the actual Anthropic, OpenAI Responses and Chat Completions adapters; those checks establish placement and stable payloads, not a guaranteed cache hit rate or cost saving.
 
 SDK hosts using a custom resource loader can pass `optchat(pi, { agentDir, discover })`. Supply its agent directory explicitly when it initially has no global guidance file; set `discover: false` to disable project/global discovery. Pi does not expose those resource-loader options to extension events. The CLI’s `--no-context-files`/`-nc` is respected for the main agent; profile instructions still apply. Subagents retain their own project discovery.
 

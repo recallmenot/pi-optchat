@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Guidance, guidanceState, GUIDANCE_STATE, type GuidanceState } from './guidance.ts';
 import { GuidanceRequests, GUIDANCE_REQUEST, transcriptGuidance, withGuidanceRecall } from './guidance-recall.ts';
+import { Pins, pinTools } from './pins.ts';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { homedir } from 'node:os';
@@ -282,6 +283,9 @@ export class Children {
     thinking?: ModelChoice['thinking']; sessionManager: SessionManager }) {
     const { id, directory, depth, parentId, connected } = o;
     const guidance = new Guidance(this.profileDirectory), requests = new GuidanceRequests(this.profileDirectory);
+    const parentSession = this.history.records.get(id)?.parentSession ?? this.options.parentSession;
+    const pins = new Pins(this.profileDirectory, directory, `run:${id}`, parentId ? `run:${parentId}` : parentSession ? `session:${parentSession}` : undefined, () => guidance.current(directory));
+    pins.bind();
     const { subagentLevels, maxAgents, memorySearch } = this.settings, delegates = depth < subagentLevels;
     const instructions = [this.instructions(), delegates ? delegation(maxAgents) : NO_DELEGATION, STEERABLE, connected ? CONNECTED : NOT_CONNECTED].filter(Boolean).join('\n\n');
     // The user's settings list their installed packages; a copy in memory keeps the child from writing them back.
@@ -304,7 +308,7 @@ export class Children {
             // A failed preparation has its own boundary too, with no prepared snapshot record.
             pi.appendEntry(GUIDANCE_REQUEST, requests.input());
             let nextGuidance: GuidanceState | undefined;
-            const prepared = guidance.prepare(event.messages, directory, guidanceState(ctx), state => { nextGuidance = state; });
+            const prepared = guidance.prepare(event.messages, directory, guidanceState(ctx), state => { nextGuidance = state; }, undefined, { files: pins.effective(), model: ctx.model ?? o.model });
             requests.prepare(prepared.revision, ctx.sessionManager.getSessionId(), event.messages);
             if (nextGuidance) pi.appendEntry(GUIDANCE_STATE, nextGuidance);
             return { messages: withGuidanceRecall(prepared.messages, refs => requests.describe(refs)) };
@@ -321,7 +325,7 @@ export class Children {
     await loader.reload();
     const { session } = await (this.options.createSession ?? createAgentSession)({ cwd: directory, resourceLoader: loader, settingsManager,
       model: o.model, thinkingLevel: o.thinking, sessionManager: o.sessionManager,
-      customTools: [...memoryTools(() => this.memory, run => this.transcript(run, id), { run: run => this.guidanceForTranscript(run) }), ...(memorySearch ? [searchTool(() => this.memory)] : []), ...(delegates ? [...this.delegationTools(id, directory, subagentLevels, maxAgents), modelsTool(() => this)] : []), this.parentTool(id, parentId, connected)],
+      customTools: [...memoryTools(() => this.memory, run => this.transcript(run, id), { run: run => this.guidanceForTranscript(run) }), ...pinTools(() => pins), ...(memorySearch ? [searchTool(() => this.memory)] : []), ...(delegates ? [...this.delegationTools(id, directory, subagentLevels, maxAgents), modelsTool(() => this)] : []), this.parentTool(id, parentId, connected)],
       excludeTools: delegates ? [] : ['spawn', 'tell', 'models'],
     });
     // Callers track the session only after this returns: clean up here if its extensions fail to start.

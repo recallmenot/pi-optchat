@@ -14,6 +14,7 @@ import { REPORT_TYPE, textContent } from '../src/transcript.ts';
 import { emptyUsage } from '../src/usage.ts';
 import { GUIDANCE_STATE, type GuidanceState } from '../src/guidance.ts';
 import { GuidanceRequests } from '../src/guidance-recall.ts';
+import { Pins } from '../src/pins.ts';
 import { removeDir } from './support.ts';
 
 const system = (context: Context) => { const head = context.messages[0]; return head?.role === 'system' ? getSystemMessageText(head) : ''; };
@@ -191,10 +192,14 @@ test('actual Pi subagent compaction retains current guidance, earlier transition
   } }));`);
   const source = join(cwd, 'AGENTS.md'); writeFileSync(source, 'Use SQLite.');
   const memory = new Memory(profile, async () => 'Summary.'); memory.append('user', 'Reference material. '.repeat(2000));
+  const pins = new Pins(profile, cwd, 'fixture');
+  writeFileSync(join(cwd, 'SPEC.md'), 'COMPACTION_SPEC_FULL'); writeFileSync(join(cwd, 'PLAN.md'), 'COMPACTION_PLAN_V1');
+  pins.pin('SPEC.md', 'pre-memory', 'requirements', 'Project specification', 'project');
+  pins.pin('PLAN.md', 'post-memory', 'plan', 'Active plan', 'project');
   const captured: Context[] = []; let calls = 0;
   const rt = await runtime(dir, context => {
     captured.push(structuredClone(context)); calls++;
-    if (calls === 1) writeFileSync(source, 'Use PostgreSQL.');
+    if (calls === 1) { writeFileSync(source, 'Use PostgreSQL.'); writeFileSync(join(cwd, 'PLAN.md'), 'COMPACTION_PLAN_V2'); }
     return calls <= 2 ? [...(calls === 1 ? [{ type: 'text' as const, text: 'EARLY_WORK '.repeat(3000) }] : []),
       { type: 'toolCall', id: `zoom-${calls}`, name: 'zoom', arguments: { id: 0 } }] : [{ type: 'text', text: 'Done.' }];
   }, 100000, () => calls === 2 ? 70000 : 100);
@@ -211,6 +216,13 @@ test('actual Pi subagent compaction retains current guidance, earlier transition
     const manager = SessionManager.open(children.history.records.get(id)!.sessionFile!);
     assert.equal(manager.getEntries().filter(e => e.type === 'compaction').length, 1);
     assert.match(system(captured[2]), /Use PostgreSQL/);
+    assert.match(system(captured[2]), /COMPACTION_SPEC_FULL/);
+    assert.doesNotMatch(system(captured[2]), /COMPACTION_PLAN_V2/);
+    const postCompaction = captured[2].messages.map(m => textContent(m.content)).join('\n');
+    assert.ok(postCompaction.indexOf('Earlier work summarized.') < postCompaction.indexOf('COMPACTION_PLAN_V2'), 'post-memory plan follows the real Pi compaction summary');
+    assert.equal(postCompaction.split('COMPACTION_PLAN_V2').length - 1 >= 1, true);
+    const canonical = children.transcript(id)!;
+    assert.doesNotMatch(JSON.stringify(canonical), /COMPACTION_SPEC_FULL|COMPACTION_PLAN_V1|COMPACTION_PLAN_V2/);
     assert.doesNotMatch(system(captured[2]), /Use SQLite/);
     assert.match(JSON.stringify(notices(captured[2])), /already applied, not a new change/);
     const messages = children.transcript(id)!, refs = children.guidanceForTranscript(id);
@@ -220,6 +232,8 @@ test('actual Pi subagent compaction retains current guidance, earlier transition
     const firstState = manager.getEntries().find(e => e.type === 'custom' && e.customType === GUIDANCE_STATE)!;
     assert.equal(firstState.type, 'custom');
     const original = (firstState.data as GuidanceState).revision.files.find(f => f.path === source)!;
+    const originalPlan = (firstState.data as GuidanceState).revision.files.find(f => f.pin?.kind === 'plan')!;
+    assert.ok(archived.includes(originalPlan.archive)); assert.equal(readFileSync(originalPlan.archive, 'utf8'), 'COMPACTION_PLAN_V1');
     assert.ok(archived.includes(original.archive));
     assert.equal(readFileSync(original.archive, 'utf8'), 'Use SQLite.');
     assert.deepEqual(warnings, []);

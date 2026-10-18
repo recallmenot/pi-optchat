@@ -9,6 +9,7 @@ import { Type } from 'typebox';
 import { Memory } from './memory.ts';
 import { Guidance, guidanceState, GUIDANCE_STATE, type GuidanceState, type GuidanceOptions } from './guidance.ts';
 import { GuidanceRequests, GUIDANCE_REQUEST, withGuidanceRecall, type GuidanceRef } from './guidance-recall.ts';
+import { Pins, pinTools } from './pins.ts';
 import { atomicWrite, storeFor } from './store.ts';
 import { createCompressor } from './compactor.ts';
 import { createProfile, holdProfile, instructions, isWindows, lastProfile, listProfiles, loadConfig, profilePath, rememberProfile, saveConfig, ProfileBusyError, type ProfileConfig } from './profiles.ts';
@@ -471,7 +472,7 @@ export default function optchat(pi: ExtensionAPI, guidanceOptions: GuidanceOptio
       // Built on every call, unlike the view, so it is never out of date; it goes last, after everything cached.
       const messages = buildContext(event.messages, refreshedRun(run, keep, TURN_REFRESHED), view, promptFor(prompt, a.config), previous, atWork(a.children.working));
       let nextGuidance: GuidanceState | undefined;
-      const prepared = a.guidance.prepare(messages, ctx.cwd, guidanceState(ctx), state => { nextGuidance = state; });
+      const prepared = a.guidance.prepare(messages, ctx.cwd, guidanceState(ctx), state => { nextGuidance = state; }, undefined, { files: pinsFor(ctx).effective(), model: ctx.model });
       const request = a.guidanceRequests.prepare(prepared.revision, ctx.sessionManager.getSessionId(), messages);
       if (nextGuidance) pi.appendEntry(GUIDANCE_STATE, nextGuidance);
       pi.appendEntry(GUIDANCE_REQUEST, request);
@@ -512,6 +513,11 @@ export default function optchat(pi: ExtensionAPI, guidanceOptions: GuidanceOptio
   });
   registerConnectedRenderer(pi);
   registerReportRenderer(pi);
+  const pinsFor = (ctx: ExtensionContext) => {
+    const a = required(), pins = new Pins(a.dir, ctx.cwd, `session:${ctx.sessionManager.getSessionId()}`, undefined, () => a.guidance.current(ctx.cwd));
+    pins.bind(); return pins;
+  };
+  for (const tool of pinTools(pinsFor)) pi.registerTool(tool);
   const [zoom, date] = memoryTools(() => required().memory, id => required().children.transcript(id), {
     run: id => required().children.guidanceForTranscript(id),
   });

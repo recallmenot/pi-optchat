@@ -22,11 +22,19 @@ Guidance checks do not add conversation messages. Transition state is kept in cu
 
 Original source edits, moves and deletion never remove archived versions. There is no automatic archive retention limit or pruning; copy the whole profile for backup. A failed read, invalid UTF-8, source larger than 1 MB, combined guidance larger than 1 MB, or failed archive/request write aborts the next request. A missing source removes its scope; a dangling symlink is an error. This history covers injected guidance, not every filesystem edit or the rest of an execution environment.
 
+## Pinned context registrations
+
+`context-pins.json` stores project registrations and task registrations/suppressions, with their placement, document kind, purpose and persisted parent relationships. Project identity is the canonical Git worktree root (nearest `.git` file or directory), or the exact working directory outside Git. A task is identified by its Pi session or subagent run, together with that project. The profile lock protects updates; each synchronous mutation rereads the registry and atomically replaces it. There is no automatic expiry; unpin releases future inclusion, and restarting or resuming keeps the applicable registrations. Registrations are included in profile Git checkpoints.
+
+Pinned files use the same content objects, source copies, revision manifests and request associations as automatic guidance. Manifests include each pin's placement, kind, purpose and scope; moving a pin creates a new ordered revision but reuses its preserved content. Unavailable pins are recorded explicitly as **not supplied**, without archiving rejected text. Historical recall can therefore distinguish a full supplied version from a missing pin or a request that could not fit it. Old guidance-only manifests remain readable.
+
+An unavailable manual pin stays registered and appears as unavailable in context, so the model can repair it or use `unpin_file`; dependent work should wait. Automatic guidance and archive/request-write failures retain their stricter abort behavior above. Neither route falls back to stale text. See [limits and recovery](pinned-files.md#limits-and-recovery). The registry and archive are local profile files; copying memory alone is insufficient to transfer pins or their history. Moving a profile preserves archived references; moving a project requires explicitly registering its new canonical file paths. A damaged registry must be repaired or restored from a checkpoint before work continues.
+
 ## The `Store` seam
 
 Memory reaches disk through one seam, `Store` in `src/store.ts`: the log, summary nodes, saved view and images, which is what would travel between machines.
 
-- Runs, recovery journals, imports and their pointer, usage, settings, `AGENTS.md` and the guidance archive stay local files. A future remote store must also transfer the archive to make its request references readable on another machine.
+- Runs, recovery journals, imports and their pointer, usage, settings, `AGENTS.md`, pinned registrations and the guidance archive stay local files. A future remote store must also transfer the archive to make its request references readable on another machine.
 - `FileStore` (the layout in the README) is the only store today. Another, such as Postgres, would implement the same few operations.
 - Its lease (take, heartbeat, release) is optional: without one, OptChat keeps its machine-local profile lock.
 - Import records (`imports/*.json`, the staging generations and the `active-memory.json` pointer) are per machine, so a second machine with the same `~/.claude` or Codex history on disk may offer those sessions for import again.

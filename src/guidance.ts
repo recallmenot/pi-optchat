@@ -1,11 +1,13 @@
 import { createHash } from 'node:crypto';
-import { closeSync, constants, existsSync, fstatSync, openSync, readFileSync, readSync, lstatSync, linkSync, mkdirSync } from 'node:fs';
+import { closeSync, constants, existsSync, fstatSync, openSync, readFileSync, readSync, lstatSync, linkSync, mkdirSync, realpathSync } from 'node:fs';
 import { basename, dirname, join, resolve, relative, isAbsolute } from 'node:path';
 import type { AgentMessage } from '@earendil-works/pi-agent-core';
 import { getCurrentSystemMessage, getSystemMessageText } from '@earendil-works/pi-ai';
-import { getAgentDir, loadProjectContextFiles, type ExtensionContext } from '@earendil-works/pi-coding-agent';
+import { estimateTokens, getAgentDir, loadProjectContextFiles, type ExtensionContext } from '@earendil-works/pi-coding-agent';
 import { atomicWrite } from './store.ts';
 import { isAtWork } from './cache.ts';
+import type { Pin } from './pins.ts';
+import { PINNING } from './prompts.ts';
 
 export const GUIDANCE_STATE = 'optchat.guidance';
 const LIMIT = 1_000_000;
@@ -13,14 +15,15 @@ const CANDIDATES = ['AGENTS.override.md', 'AGENTS.md', 'AGENTS.MD', 'CLAUDE.md',
 const hash = (text: string) => createHash('sha256').update(text).digest('hex');
 const normalize = (text: string) => text.replace(/^\uFEFF/, '');
 const xml = (text: string) => text.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-export interface GuidanceSource { path: string; scope: string; content: string; supplied: string; modified: string }
-export interface GuidanceFile { path: string; scope: string; version: string; archive: string; supplied: string }
-export interface GuidanceRevision { id: string; files: GuidanceFile[] }
+export interface GuidanceSource { path: string; scope: string; content: string; supplied: string; modified: string; pin?: Pin }
+export interface GuidanceFile { path: string; scope: string; version: string; archive: string; supplied: string; pin?: Pin }
+export interface PinIssue { pin: Pin; reason: string }
+export interface GuidanceRevision { id: string; files: GuidanceFile[]; unavailable?: PinIssue[] }
 interface Transition { before: string; after: string; anchor: string; occurrence?: number }
 export interface GuidanceState { revision: GuidanceRevision; transitions: Transition[] }
 
 /** Read once through one handle. Never truncate, silently fall back, or mistake a failed read for deletion. */
-function readSource(path: string, scope: string): GuidanceSource | undefined {
+export function readSource(path: string, scope: string): GuidanceSource | undefined {
   let fd: number;
   try { fd = openSync(path, constants.O_RDONLY | constants.O_NONBLOCK); }
   catch (error) {
@@ -39,9 +42,17 @@ function readSource(path: string, scope: string): GuidanceSource | undefined {
     if (bytes.length > LIMIT || bytes.length !== before.size || before.size !== after.size || before.mtimeMs !== after.mtimeMs || before.ctimeMs !== after.ctimeMs)
       throw new Error('changed while being read; retry the request');
     const content = new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes);
+    if (scope.startsWith('pin') && /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(content)) throw new Error('not supported UTF-8 text (binary/control bytes)');
     return { path: resolve(path), scope, content, supplied: normalize(content), modified: after.mtime.toISOString() };
   } catch (error) { throw new Error(`Cannot read current guidance ${path}: ${String(error)}`); }
   finally { closeSync(fd); }
+}
+
+/** A registration names a canonical target, not a symlink whose destination can later change. */
+export function readPinnedSource(path: string, scope = 'pin') {
+  const source = readSource(path, scope);
+  if (source && realpathSync(path) !== resolve(path)) throw new Error('canonical path now redirects to another file; unpin and explicitly register the intended source');
+  return source;
 }
 
 /** Match Pi's candidate priority, global → ancestors → cwd ordering and linked-worktree shadowing.
@@ -82,7 +93,7 @@ export function currentGuidance(cwd: string, profile: string, agentDir = getAgen
 export class GuidanceArchive {
   readonly directory: string;
   constructor(profile: string) { this.directory = join(profile, 'guidance'); }
-  preserve(sources: GuidanceSource[]): GuidanceRevision {
+  preserve(sources: GuidanceSource[], unavailable: PinIssue[] = []): GuidanceRevision {
     const files = sources.map(source => {
       const version = hash(source.content);
       const label = source.path.replace(/[^a-zA-Z0-9._-]+/g, '%').slice(-48);
@@ -104,19 +115,20 @@ export class GuidanceArchive {
       const metadata = join(dir, 'metadata.json');
       if (!existsSync(metadata)) atomicWrite(metadata, JSON.stringify({ source: source.path, version, modified: source.modified,
         captured: new Date().toISOString(), transformation: supplied === archive ? 'none' : 'leading UTF-8 BOM removed', supplied: basename(supplied) }, null, 2));
-      return { path: source.path, scope: source.scope, version, archive, supplied };
+      return { path: source.path, scope: source.scope, version, archive, supplied, ...(source.pin ? { pin: source.pin } : {}) };
     });
     const stored = files.map(file => ({ ...file, archive: relative(this.directory, file.archive).split('\\').join('/'), supplied: relative(this.directory, file.supplied).split('\\').join('/') }));
-    const id = hash(JSON.stringify(stored));
-    const file = join(this.directory, 'revisions', `${id}.json`), text = JSON.stringify({ id, files: stored }, null, 2);
+    const issues = unavailable.length ? { unavailable } : {};
+    const id = hash(JSON.stringify(unavailable.length ? { files: stored, unavailable } : stored));
+    const file = join(this.directory, 'revisions', `${id}.json`), text = JSON.stringify({ id, files: stored, ...issues }, null, 2);
     if (existsSync(file)) { if (readFileSync(file, 'utf8') !== text) throw new Error(`Damaged guidance revision: ${file}`); }
     else atomicWrite(file, text);
-    return { id, files };
+    return { id, files, ...issues };
   }
   revision(id: string): GuidanceRevision {
     if (!/^[a-f0-9]{64}$/.test(id)) throw new Error('Invalid guidance revision');
     const revision = JSON.parse(readFileSync(join(this.directory, 'revisions', `${id}.json`), 'utf8')) as GuidanceRevision;
-    if (revision.id !== id || hash(JSON.stringify(revision.files)) !== id) throw new Error(`Damaged guidance revision: ${id}`);
+    if (revision.id !== id || hash(JSON.stringify(revision.unavailable?.length ? { files: revision.files, unavailable: revision.unavailable } : revision.files)) !== id) throw new Error(`Damaged guidance revision: ${id}`);
     const locate = (path: string) => {
       if (isAbsolute(path) || path.split(/[\\/]/).includes('..')) throw new Error(`Invalid guidance archive path: ${path}`);
       return join(this.directory, path);
@@ -136,7 +148,10 @@ function difference(before: GuidanceRevision, after: GuidanceRevision) {
   const changes: string[] = [];
   for (const old of before.files) {
     const next = after.files.find(file => file.path === old.path);
-    if (!next) { changes.push(`${old.path} no longer applies`); continue; }
+    if (!next) { changes.push(after.unavailable?.some(issue => issue.pin.path === old.path) ? `${old.path} is unavailable; its current contents are NOT supplied`
+      : old.pin ? `${old.path} is no longer pinned; this does not mean deletion or revoked requirements` : `${old.path} no longer applies`); continue; }
+    if (old.pin?.block !== next.pin?.block && old.pin && next.pin) changes.push(`Moved ${old.path} from ${old.pin.block} to ${next.pin.block}; placement does not change authority`);
+    if (JSON.stringify(old.pin) !== JSON.stringify(next.pin) && old.pin?.block === next.pin?.block) changes.push(`${old.path}: registration scope, kind or purpose changed`);
     if (old.version !== next.version) {
       const a = readFileSync(old.supplied, 'utf8').split('\n'), b = readFileSync(next.supplied, 'utf8').split('\n');
       const oldLines = new Set(a), newLines = new Set(b);
@@ -144,7 +159,10 @@ function difference(before: GuidanceRevision, after: GuidanceRevision) {
       changes.push(`${old.path}: ${removed.length || added.length ? `${removed.length} previous lines absent from current text and ${added.length} current lines absent from previous text` : 'line ordering, repetition or whitespace changed'} (previous excerpt ${quote(removed[0] ?? a.join('\n'))}; current excerpt ${quote(added[0] ?? b.join('\n'))}; excerpts are not an exhaustive description)`);
     }
   }
-  for (const file of after.files) if (!before.files.some(old => old.path === file.path)) changes.push(`${file.path} now applies`);
+  for (const file of after.files) if (!before.files.some(old => old.path === file.path)) changes.push(`${file.path} ${file.pin ? 'is now supplied as pinned context (no earlier supplied version is implied)' : 'now applies'}`);
+  for (const issue of after.unavailable ?? []) if (!before.unavailable?.some(old => JSON.stringify(old) === JSON.stringify(issue))) changes.push(`${issue.pin.path}: ${issue.reason}`);
+  for (const issue of before.unavailable ?? []) if (!after.unavailable?.some(next => next.pin.path === issue.pin.path) && !after.files.some(file => file.path === issue.pin.path))
+    changes.push(`${issue.pin.path} is no longer pinned; this does not mean deletion or revoked requirements`);
   if (JSON.stringify(before.files.map(f => [f.path, f.scope])) !== JSON.stringify(after.files.map(f => [f.path, f.scope])))
     changes.push('the applicable sources, scopes or ordering changed');
   return `${changes.slice(0, 4).join('; ')}${changes.length > 4 ? `; ${changes.length - 4} additional source/order changes (consult the full revisions)` : ''}.`;
@@ -152,9 +170,9 @@ function difference(before: GuidanceRevision, after: GuidanceRevision) {
 
 /** Source bytes can change without changing supplied instructions (for example, adding a BOM). */
 function sameEffectiveGuidance(before: GuidanceRevision, after: GuidanceRevision) {
-  return before.files.length === after.files.length && before.files.every((old, index) => {
+  return JSON.stringify(before.unavailable ?? []) === JSON.stringify(after.unavailable ?? []) && before.files.length === after.files.length && before.files.every((old, index) => {
     const next = after.files[index];
-    return old.path === next.path && old.scope === next.scope &&
+    return old.path === next.path && old.scope === next.scope && JSON.stringify(old.pin) === JSON.stringify(next.pin) &&
       (old.version === next.version || readFileSync(old.supplied, 'utf8') === readFileSync(next.supplied, 'utf8'));
   });
 }
@@ -172,7 +190,63 @@ export function guidanceState(ctx: ExtensionContext): GuidanceState | undefined 
 
 /** Project guidance is independent of the prompt Pi cached at turn start. Strip its original injection at construction. */
 export function guidancePrompt(prompt: string, sources: GuidanceSource[]) {
-  return `${prompt}\n\n<optchat_guidance>\nCurrent applicable guidance, in established source order. A newer revision supersedes that source's older revision; it does not override explicit user instructions. Historical copies explain earlier work and do not become current instructions.\n${sources.map(source => `<project_instructions path="${xml(source.path)}" scope="${xml(source.scope)}">\n${source.supplied}\n</project_instructions>`).join('\n\n')}\n</optchat_guidance>`;
+  return `${prompt}\n\n${PINNING}\n\n<optchat_guidance block="pre-memory">\nCurrent applicable guidance, in established source order. A newer revision supersedes that source's older revision; it does not override explicit user instructions. Historical copies explain earlier work and do not become current instructions.\n${sources.map(source => `<project_instructions path="${xml(source.path)}" scope="${xml(source.scope)}">\n${source.supplied}\n</project_instructions>`).join('\n\n')}\n</optchat_guidance>`;
+}
+
+function pinBlock(block: Pin['block'], sources: GuidanceSource[], unavailable: PinIssue[]) {
+  const attrs = (p: Pin) => `path="${xml(p.path)}" kind="${p.kind}" scope="${p.scope}" project="${xml(p.project)}"${p.owner ? ` owner="${xml(p.owner)}"` : ''} purpose="${xml(p.purpose)}"`;
+  const files = sources.filter(s => s.pin?.block === block).map(s => `<pinned_file ${attrs(s.pin!)}>\n${s.supplied}\n</pinned_file>`);
+  const issues = unavailable.filter(i => i.pin.block === block).map(i => `<unavailable_pin ${attrs(i.pin)}>\nUNAVAILABLE: ${xml(i.reason)}. No contents supplied; repair or unpin before dependent work.\n</unavailable_pin>`);
+  return `<pinned_files block="${block}">\n${[...files, ...issues].join('\n\n') || '(no manually pinned files in this block)'}\n</pinned_files>`;
+}
+
+/** Split the memory/task boundary without putting any injected text into canonical messages or tool results. */
+function postMemory(messages: AgentMessage[], text: string): AgentMessage[] {
+  for (const [index, message] of messages.entries()) {
+    if (message.role !== 'user') continue;
+    const content = typeof message.content === 'string' ? [{ type: 'text' as const, text: message.content }] : message.content;
+    const first = content[0];
+    if (first?.type !== 'text' || !first.text.startsWith('<chat>\n')) continue;
+    const task = first.text.indexOf('\n</chat>\n\nYour task:\n');
+    const end = task >= 0 ? task + '\n</chat>'.length : first.text.endsWith('\n</chat>') ? first.text.length : -1;
+    if (end < 0) continue;
+    return messages.map((m, i) => i === index ? { ...message, content: [{ type: 'text', text: first.text.slice(0, end) },
+      { type: 'text', text: `\n\n${text}` }, ...(first.text.slice(end) ? [{ type: 'text' as const, text: first.text.slice(end) }] : []), ...content.slice(1)] } : m);
+  }
+  // After Pi compaction, the summary replaces the old memory/task prefix. Never insert between a tool call and its result.
+  const summary = messages.findLastIndex(m => m.role === 'compactionSummary' || m.role === 'branchSummary');
+  const at = summary >= 0 ? summary + 1 : messages.findIndex(m => m.role !== 'system');
+  const marker: AgentMessage = { role: 'custom', customType: 'optchat-pinned-files', display: false, content: text, timestamp: 0 };
+  return [...messages.slice(0, at < 0 ? messages.length : at), marker, ...messages.slice(at < 0 ? messages.length : at)];
+}
+
+export interface PinnedContext { files: Pin[]; model?: { contextWindow: number; maxTokens: number } }
+/** Estimates include both blocks, existing work, system/tool schemas and room for a reply. No partial file is ever admitted. */
+function pinSources(pins: PinnedContext, messages: AgentMessage[], automatic: GuidanceSource[], overhead = 0) {
+  const sources: GuidanceSource[] = [], unavailable: PinIssue[] = [];
+  if (!pins.files.length) return { sources, unavailable };
+  const identities = automatic.map(source => { try { return realpathSync(source.path); } catch { return source.path; } });
+  for (const pin of pins.files) {
+    if (identities.includes(pin.path)) continue; // Automatic guidance is always pre-memory, once, including symlink aliases.
+    try {
+      const source = readPinnedSource(pin.path, `pin:${pin.scope}:${pin.owner ?? pin.project}`);
+      if (!source) throw new Error('source is missing; restore it or unpin the old path and pin the new one');
+      sources.push({ ...source, pin });
+    } catch (error) { unavailable.push({ pin, reason: String(error) }); }
+  }
+  const bytes = Buffer.byteLength(pinBlock('pre-memory', sources, unavailable) + pinBlock('post-memory', sources, unavailable));
+  const window = pins.model?.contextWindow;
+  // Pi's estimator includes images and tool schemas. A 25% margin and a two-bytes/token pin estimate cover denser prose/code.
+  const base = overhead + Math.ceil(messages.reduce((sum, message) => sum + estimateTokens(message), 0) * 1.25) + Math.ceil(Buffer.byteLength(automatic.map(s => s.supplied).join('\n') + PINNING) / 2);
+  const reserve = window ? Math.min(pins.model!.maxTokens || 8192, Math.floor(window / 4)) + Math.ceil(window / 10) : 0;
+  const available = window ? Math.max(0, window - base - reserve) : Infinity;
+  if (sources.length && (bytes > LIMIT || pins.files.length > 32 || Math.ceil(bytes / 2) > available)) {
+    const reason = bytes > LIMIT || pins.files.length > 32 ? `combined pins exceed the 1 MB / 32-file safety limit`
+      : 'combined pins exceed available context after memory, work, tools and reply headroom; reduce pins, refresh work or use a larger model';
+    unavailable.push(...sources.map(source => ({ pin: source.pin!, reason })));
+    sources.length = 0;
+  }
+  return { sources, unavailable };
 }
 
 // Pi maps hidden custom context to the provider's user-compatible role, including APIs that
@@ -198,17 +272,26 @@ export class Guidance {
     this.archive = new GuidanceArchive(profile);
     this.agentDir = options.agentDir ?? getAgentDir();
   }
+  current(cwd: string, agentDir?: string) { return currentGuidance(cwd, this.profile, agentDir ?? this.agentDir, this.options.discover); }
   private transitionText(transition: Transition) {
     const before = this.archive.revision(transition.before), after = this.archive.revision(transition.after);
-    const paths = before.files.slice(0, 3).map(file => `${file.path} → ${file.supplied}`).join('\n') || '(no previous sources)';
+    const changed = before.files.filter(old => !after.files.some(file => file.path === old.path && file.version === old.version && JSON.stringify(file.pin) === JSON.stringify(old.pin)));
+    const paths = (changed.length ? changed : before.files).slice(0, 3).map(file => `${file.path} → ${file.supplied}`).join('\n') || '(no previous sources)';
     const all = before.files.length > 3 ? `\nAll previous sources in order: ${join(this.archive.directory, 'revisions', `${before.id}.json`)}` : '';
-    return `Project guidance has been updated directly in your context; the complete current contents are already supplied, so no manual reread is needed.\n${difference(before, after)}\nThis revision applies from this step onward; earlier work may reflect earlier instructions and may need adaptation, but a difference alone does not establish an earlier instruction violation.\nPrevious guidance (historical copies):\n${paths}${all}\nOpen a previous copy only if needed to understand something relevant to continuing the task; it does not replace current guidance.`;
+    return `Project guidance / pinned context has been updated directly in your context; ${after.unavailable?.length ? 'pins marked UNAVAILABLE have NO current contents supplied; pause dependent work and repair or unpin them' : 'the complete current contents are already supplied, so no manual reread is needed'}.\n${difference(before, after)}\nThis revision applies from this step onward; earlier work may reflect earlier instructions, requirements or plans and may need adaptation, but a difference alone does not establish an earlier instruction violation.\nPrevious guidance (historical copies):\n${paths}${all}\nOpen a previous copy only if needed to understand something relevant to continuing the task; it does not replace current guidance.`;
   }
-  prepare(messages: AgentMessage[], cwd: string, previous: GuidanceState | undefined, save: (state: GuidanceState) => void, agentDir?: string) {
+  prepare(messages: AgentMessage[], cwd: string, previous: GuidanceState | undefined, save: (state: GuidanceState) => void, agentDir?: string, pins: PinnedContext = { files: [] }) {
     const head = getCurrentSystemMessage(messages);
     if (!head) throw new Error('Cannot inject guidance without a system prompt');
     if (previous) previous = { ...previous, revision: this.archive.revision(previous.revision.id) };
-    const sources = currentGuidance(cwd, this.profile, agentDir ?? this.agentDir, this.options.discover), revision = this.archive.preserve(sources);
+    const automatic = this.current(cwd, agentDir);
+    // Existing notices are outside canonical work; include them in the budget plus room for a new transition.
+    const notices = pins.files.length ? previous?.transitions.map(t => notice(this.transitionText(t))) ?? [] : [];
+    const overhead = 1500 + Math.ceil(Buffer.byteLength(JSON.stringify(pins.files)) / 2);
+    const pinned = pinSources(pins, [...messages, ...notices], automatic, overhead);
+    pinned.sources.sort((a, b) => Number(a.pin!.block === 'post-memory') - Number(b.pin!.block === 'post-memory'));
+    const sources = [...automatic, ...pinned.sources];
+    const revision = this.archive.preserve(sources, pinned.unavailable);
     let state = previous;
     if (previous?.revision.id !== revision.id) {
       const keys = new Set(messages.filter(message => message.role !== 'system').map(guidanceKey));
@@ -222,7 +305,7 @@ export class Guidance {
       state = { revision, transitions };
       save(state);
     }
-    const output: AgentMessage[] = [{ role: 'system', content: guidancePrompt(getSystemMessageText(head), sources), toolsAdded: head.toolsAdded, timestamp: 0 }];
+    const output: AgentMessage[] = [{ role: 'system', content: `${guidancePrompt(getSystemMessageText(head), automatic)}\n\n${pinBlock('pre-memory', pinned.sources, pinned.unavailable)}`, toolsAdded: head.toolsAdded, timestamp: 0 }];
     const body = messages.filter(message => message.role !== 'system');
     const keys = body.map(guidanceKey);
     // Once a boundary leaves the visible work, retain the latest such transition, explicitly as history.
@@ -235,6 +318,7 @@ export class Guidance {
       for (const transition of state!.transitions) if (transition.anchor === keys[index] && occurrence === (transition.occurrence ?? 0))
         output.push(notice(this.transitionText(transition)));
     }
-    return { messages: output, revision };
+    const hasPost = pinned.sources.some(s => s.pin!.block === 'post-memory') || pinned.unavailable.some(i => i.pin.block === 'post-memory');
+    return { messages: hasPost ? postMemory(output, pinBlock('post-memory', pinned.sources, pinned.unavailable)) : output, revision };
   }
 }

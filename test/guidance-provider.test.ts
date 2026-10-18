@@ -12,6 +12,7 @@ import { stream as responses } from '@earendil-works/pi-ai/api/openai-responses'
 import { stream as completions } from '@earendil-works/pi-ai/api/openai-completions';
 import { Guidance, type GuidanceState } from '../src/guidance.ts';
 import { cachePayload, record } from '../src/cache.ts';
+import { Pins } from '../src/pins.ts';
 import { removeDir } from './support.ts';
 
 for (const api of ['anthropic-messages', 'openai-responses', 'openai-completions'] as const) {
@@ -19,12 +20,15 @@ for (const api of ['anthropic-messages', 'openai-responses', 'openai-completions
     const dir = mkdtempSync(join(tmpdir(), 'optchat-guidance-wire-')), cwd = join(dir, 'project'), profile = join(dir, 'profile');
     mkdirSync(cwd); mkdirSync(profile); const source = join(cwd, 'AGENTS.md'); writeFileSync(source, 'Use SQLite.');
     const guidance = new Guidance(profile); let state: GuidanceState | undefined;
+    const pins = new Pins(profile, cwd, 'fixture');
+    writeFileSync(join(cwd, 'SPEC.md'), 'STABLE_SPECIFICATION'); writeFileSync(join(cwd, 'PLAN.md'), 'ACTIVE_PLAN_V1');
+    pins.pin('SPEC.md', 'pre-memory', 'requirements', 'Architecture'); pins.pin('PLAN.md', 'post-memory', 'plan', 'Current steps');
     const model: Model<typeof api> = { api, provider: api === 'anthropic-messages' ? 'anthropic' : 'openai', id: 'fixture', name: 'Fixture',
       baseUrl: 'https://invalid.local', reasoning: false, input: ['text'], cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 }, contextWindow: 100000, maxTokens: 20 };
     async function capture(memory: string) {
       const base: AgentMessage[] = [{ role: 'system', content: 'STABLE_INSTRUCTIONS', timestamp: 0 },
         { role: 'user', content: [{ type: 'text', text: `<chat>\n0+1|memory\n1+1|more\n2+1|more\n3+1|more\n${memory}\n</chat>` }, { type: 'text', text: '\n\nRECENT_WORK' }], timestamp: 1 }];
-      const prepared = guidance.prepare(base, cwd, state, s => { state = s; }, join(dir, 'agent'));
+      const prepared = guidance.prepare(base, cwd, state, s => { state = s; }, join(dir, 'agent'), { files: pins.effective(), model });
       let payload: unknown;
       const options = { apiKey: 'synthetic', maxTokens: 20,
         onPayload(value: unknown) { payload = structuredClone(api === 'anthropic-messages' ? cachePayload(value) : value); throw new Error('Captured before network'); },
@@ -45,14 +49,23 @@ for (const api of ['anthropic-messages', 'openai-responses', 'openai-completions
       assert.equal(head(first), head(unchanged), 'changing memory leaves the guidance prefix byte-identical');
       utimesSync(source, new Date(), new Date(Date.now() + 10000));
       assert.deepEqual(await capture('view two'), unchanged, 'touching guidance produces an identical provider payload');
+      writeFileSync(join(cwd, 'PLAN.md'), 'ACTIVE_PLAN_V2');
+      const planChanged = await capture('view two');
+      assert.equal(head(planChanged), head(unchanged), 'editing a post-memory plan preserves the system/pre-memory prefix');
+      const prefix = (p: Record<string, unknown>) => JSON.stringify(p).split('<pinned_files block=\\"post-memory\\">')[0];
+      assert.equal(prefix(planChanged), prefix(unchanged), 'the actual serialized memory prefix is unchanged too');
+      assert.deepEqual(await capture('view two'), planChanged, 'unchanged post-memory pins and notices are stable');
       writeFileSync(source, 'Use PostgreSQL.');
       const changed = await capture('view three'), serialized = JSON.stringify(changed);
       assert.match(head(changed), /Use PostgreSQL/); assert.doesNotMatch(head(changed), /Use SQLite/);
       assert.ok(head(changed).indexOf('STABLE_INSTRUCTIONS') < head(changed).indexOf('Use PostgreSQL'));
       const ordered = head(changed) + JSON.stringify(api === 'openai-responses' ? changed.input : changed.messages);
       assert.ok(ordered.indexOf('Use PostgreSQL') < ordered.indexOf('<chat>'));
+      assert.ok(ordered.indexOf('STABLE_SPECIFICATION') < ordered.indexOf('<chat>'));
+      assert.ok(ordered.indexOf('</chat>') < ordered.indexOf('ACTIVE_PLAN_V2'));
+      assert.ok(ordered.indexOf('ACTIVE_PLAN_V2') < ordered.indexOf('RECENT_WORK'));
       assert.ok(serialized.indexOf('RECENT_WORK') < serialized.indexOf('<guidance_update>'));
-      assert.equal(serialized.split('<guidance_update>').length - 1, 1);
+      assert.equal(serialized.split('<guidance_update>').length - 1, 2);
       if (api === 'anthropic-messages') {
         assert.equal(changed.cache_control, undefined, 'no top-level mark that could conflict with block TTLs');
         assert.ok(Array.isArray(changed.messages));
