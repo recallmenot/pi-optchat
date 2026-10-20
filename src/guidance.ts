@@ -143,29 +143,38 @@ export class GuidanceArchive {
 }
 
 const quote = (text: string) => JSON.stringify(text.replace(/\s+/g, ' ').trim().slice(0, 160));
-/** Mechanical excerpts, never a guessed semantic summary. Counts make broader edits explicit. */
+/** Mechanical excerpts, never a guessed semantic summary. Broader edits include line counts. */
 function difference(before: GuidanceRevision, after: GuidanceRevision) {
   const changes: string[] = [];
   for (const old of before.files) {
     const next = after.files.find(file => file.path === old.path);
-    if (!next) { changes.push(after.unavailable?.some(issue => issue.pin.path === old.path) ? `${old.path} is unavailable; its current contents are NOT supplied`
-      : old.pin ? `${old.path} is no longer pinned; this does not mean deletion or revoked requirements` : `${old.path} no longer applies`); continue; }
-    if (old.pin?.block !== next.pin?.block && old.pin && next.pin) changes.push(`Moved ${old.path} from ${old.pin.block} to ${next.pin.block}; placement does not change authority`);
+    if (!next) {
+      if (!after.unavailable?.some(issue => issue.pin.path === old.path)) changes.push(old.pin
+        ? `${old.path} unpinned; requirements are not revoked` : `${old.path} no longer applies`);
+      continue;
+    }
+    if (old.pin?.block !== next.pin?.block && old.pin && next.pin) changes.push(`Moved ${old.path} from ${old.pin.block} to ${next.pin.block}`);
     if (JSON.stringify(old.pin) !== JSON.stringify(next.pin) && old.pin?.block === next.pin?.block) changes.push(`${old.path}: registration scope, kind or purpose changed`);
     if (old.version !== next.version) {
       const a = readFileSync(old.supplied, 'utf8').split('\n'), b = readFileSync(next.supplied, 'utf8').split('\n');
       const oldLines = new Set(a), newLines = new Set(b);
       const removed = a.filter(line => line.trim() && !newLines.has(line)), added = b.filter(line => line.trim() && !oldLines.has(line));
-      changes.push(`${old.path}: ${removed.length || added.length ? `${removed.length} previous lines absent from current text and ${added.length} current lines absent from previous text` : 'line ordering, repetition or whitespace changed'} (previous excerpt ${quote(removed[0] ?? a.join('\n'))}; current excerpt ${quote(added[0] ?? b.join('\n'))}; excerpts are not an exhaustive description)`);
+      const counts = removed.length === 1 && added.length === 1 ? ''
+        : `${removed.length} lines only in previous text, ${added.length} only in current text; `;
+      changes.push(`${old.path} updated: ${removed.length || added.length
+        ? `${counts}excerpts ${quote(removed[0] ?? '')} → ${quote(added[0] ?? '')}`
+        : 'line order, repetition or whitespace changed'}`);
     }
   }
-  for (const file of after.files) if (!before.files.some(old => old.path === file.path)) changes.push(`${file.path} ${file.pin ? 'is now supplied as pinned context (no earlier supplied version is implied)' : 'now applies'}`);
-  for (const issue of after.unavailable ?? []) if (!before.unavailable?.some(old => JSON.stringify(old) === JSON.stringify(issue))) changes.push(`${issue.pin.path}: ${issue.reason}`);
+  for (const file of after.files) if (!before.files.some(old => old.path === file.path)) changes.push(`${file.path} ${file.pin ? `now supplied in ${file.pin.block}` : 'now applies'}`);
+  for (const issue of after.unavailable ?? []) if (!before.unavailable?.some(old => JSON.stringify(old) === JSON.stringify(issue))) changes.push(`${issue.pin.path} UNAVAILABLE (no contents supplied): ${issue.reason}`);
   for (const issue of before.unavailable ?? []) if (!after.unavailable?.some(next => next.pin.path === issue.pin.path) && !after.files.some(file => file.path === issue.pin.path))
-    changes.push(`${issue.pin.path} is no longer pinned; this does not mean deletion or revoked requirements`);
-  if (JSON.stringify(before.files.map(f => [f.path, f.scope])) !== JSON.stringify(after.files.map(f => [f.path, f.scope])))
-    changes.push('the applicable sources, scopes or ordering changed');
-  return `${changes.slice(0, 4).join('; ')}${changes.length > 4 ? `; ${changes.length - 4} additional source/order changes (consult the full revisions)` : ''}.`;
+    changes.push(`${issue.pin.path} unpinned; requirements are not revoked`);
+  // A reported block move already explains its effect on ordering.
+  const retained = (files: GuidanceFile[], other: GuidanceFile[]) => files.filter(f => other.some(o => o.path === f.path && o.pin?.block === f.pin?.block)).map(f => [f.path, f.scope]);
+  if (JSON.stringify(retained(before.files, after.files)) !== JSON.stringify(retained(after.files, before.files)))
+    changes.push('source order or scope changed');
+  return `${changes.slice(0, 4).join('; ')}${changes.length > 4 ? `; ${changes.length - 4} further changes` : ''}.`;
 }
 
 /** Source bytes can change without changing supplied instructions (for example, adding a BOM). */
@@ -190,7 +199,7 @@ export function guidanceState(ctx: ExtensionContext): GuidanceState | undefined 
 
 /** Project guidance is independent of the prompt Pi cached at turn start. Strip its original injection at construction. */
 export function guidancePrompt(prompt: string, sources: GuidanceSource[]) {
-  return `${prompt}\n\n${PINNING}\n\n<optchat_guidance block="pre-memory">\nCurrent applicable guidance, in established source order. A newer revision supersedes that source's older revision; it does not override explicit user instructions. Historical copies explain earlier work and do not become current instructions.\n${sources.map(source => `<project_instructions path="${xml(source.path)}" scope="${xml(source.scope)}">\n${source.supplied}\n</project_instructions>`).join('\n\n')}\n</optchat_guidance>`;
+  return `${prompt}\n\n${PINNING}\n\n<optchat_guidance block="pre-memory">\nCurrent applicable guidance, in established source order.\n${sources.map(source => `<project_instructions path="${xml(source.path)}" scope="${xml(source.scope)}">\n${source.supplied}\n</project_instructions>`).join('\n\n')}\n</optchat_guidance>`;
 }
 
 function pinBlock(block: Pin['block'], sources: GuidanceSource[], unavailable: PinIssue[]) {
@@ -253,7 +262,7 @@ function pinSources(pins: PinnedContext, messages: AgentMessage[], automatic: Gu
 // collapse later system messages into the head. It never enters the canonical session or memory.
 function notice(content: string): AgentMessage {
   return { role: 'custom', customType: 'optchat-guidance-update', display: false,
-    content: `<guidance_update>\nHarness-supplied guidance transition, not a new user task.\n${content}\n</guidance_update>`, timestamp: 0 };
+    content: `<guidance_update>\n${content}\n</guidance_update>`, timestamp: 0 };
 }
 
 export interface GuidanceOptions { agentDir?: string; discover?: boolean }
@@ -275,10 +284,16 @@ export class Guidance {
   current(cwd: string, agentDir?: string) { return currentGuidance(cwd, this.profile, agentDir ?? this.agentDir, this.options.discover); }
   private transitionText(transition: Transition) {
     const before = this.archive.revision(transition.before), after = this.archive.revision(transition.after);
-    const changed = before.files.filter(old => !after.files.some(file => file.path === old.path && file.version === old.version && JSON.stringify(file.pin) === JSON.stringify(old.pin)));
-    const paths = (changed.length ? changed : before.files).slice(0, 3).map(file => `${file.path} → ${file.supplied}`).join('\n') || '(no previous sources)';
-    const all = before.files.length > 3 ? `\nAll previous sources in order: ${join(this.archive.directory, 'revisions', `${before.id}.json`)}` : '';
-    return `Project guidance / pinned context has been updated directly in your context; ${after.unavailable?.length ? 'pins marked UNAVAILABLE have NO current contents supplied; pause dependent work and repair or unpin them' : 'the complete current contents are already supplied, so no manual reread is needed'}.\n${difference(before, after)}\nThis revision applies from this step onward; earlier work may reflect earlier instructions, requirements or plans and may need adaptation, but a difference alone does not establish an earlier instruction violation.\nPrevious guidance (historical copies):\n${paths}${all}\nOpen a previous copy only if needed to understand something relevant to continuing the task; it does not replace current guidance.`;
+    const changed = before.files.filter(old => !after.files.some(file => file.path === old.path && file.version === old.version));
+    const edited = changed.some(old => after.files.some(file => file.path === old.path));
+    const guidanceChanged = changed.some(old => !old.pin) || after.files.some(file => !file.pin && !before.files.some(old => old.path === file.path));
+    const lines = [difference(before, after)];
+    if (edited) lines.push('Updated contents are supplied for this step.');
+    if (edited || guidanceChanged) lines.push('Applies from this step onward; the change alone does not imply earlier work was wrong.');
+    // Moves and registration edits need no previous contents; retain references for edits, removals and unavailable sources.
+    if (changed.length) lines.push(`Previous versions (read if relevant):\n${changed.slice(0, 3).map(file => `${file.path} → ${file.supplied}`).join('\n')}`);
+    if (changed.length > 3) lines.push(`All previous sources: ${join(this.archive.directory, 'revisions', `${before.id}.json`)}`);
+    return lines.join('\n');
   }
   prepare(messages: AgentMessage[], cwd: string, previous: GuidanceState | undefined, save: (state: GuidanceState) => void, agentDir?: string, pins: PinnedContext = { files: [] }) {
     const head = getCurrentSystemMessage(messages);

@@ -53,7 +53,7 @@ export class GuidanceRequests {
       atomicWrite(path, json);
       text = `${records.length} request associations; complete ordered source references: ${path}`;
     }
-    return `<historical_guidance>\nGuidance associated with this work, preserved when its requests were prepared. These copies explain earlier work; opening them does not replace current applicable guidance.\n${text}\n</historical_guidance>`;
+    return `<historical_guidance>\nThese are the file versions supplied when this work occurred. Read relevant copies to understand it in its original context. Opening them does not change the current pinned files.\n${text}\n</historical_guidance>`;
   }
 }
 

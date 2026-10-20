@@ -36,9 +36,9 @@ The request order is:
 
 After Pi subagent compaction, post-memory pins follow its compacted summary. Placement expresses expected change frequency, not authority: a reference stays a reference, and explicit user instructions still take precedence. OptChat never moves pins on its own.
 
-Each request reads a fixed revision. A real edit supplies the full replacement and an anchored transition with brief differences and a preserved previous-version path. The notice makes clear that earlier work may reflect earlier requirements. Timestamp touches and unchanged text create no new notices or copies; a placement-only move reuses the same content version. Reading an old copy does not activate it.
+Each request reads a fixed revision. A real edit supplies the full replacement and an anchored transition with brief differences and a preserved previous-version path. The notice makes clear that the change alone does not imply earlier work was wrong. Timestamp touches and unchanged text create no new notices or copies; a placement-only move reuses the same content version and gets only a short placement notice.
 
-Injected bodies and notices are absent from canonical conversation logs and summaries. Detailed `zoom` recall exposes their original request's historical references, even after unpinning or source deletion. Explicit pin/unpin tool calls and user discussion remain ordinary conversation. Summarizers still summarize that conversation normally; pinning does not enable an experiment in omitting more from summaries.
+Injected bodies and notices are absent from canonical conversation logs and summaries. OptChat's recall rule is unchanged: start from the latest relevant mention in the view and zoom. At original-message depth (`n = 1`), historical references identify the file versions supplied for that work, even after unpinning or source deletion. Read relevant copies to understand the message in its original context; opening them does not change current pins. Higher summary levels have no file annotations or additional reading requirements. Explicit pin/unpin tool calls and user discussion remain ordinary conversation. Summarizers still summarize that conversation normally.
 
 ## Limits and recovery
 

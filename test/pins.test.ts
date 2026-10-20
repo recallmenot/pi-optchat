@@ -40,7 +40,7 @@ test('two full blocks, stable requests, moves without new contents, block-indepe
     for (let i = 1; i < order.length; i++) assert.ok(text.indexOf(order[i - 1]) < text.indexOf(order[i]), order.join(' → '));
     assert.match(text, /kind="requirements".*purpose="Preserve project intent"/);
     assert.ok(text.includes(PINNING));
-    assert.match(PINNING, /only for important files/); assert.match(PINNING, /Keep them pinned while needed/); assert.match(PINNING, /freely unpin_file/);
+    assert.match(PINNING, /important specifications/); assert.match(PINNING, /Keep them pinned while needed/); assert.match(PINNING, /freely unpin_file/);
     assert.deepEqual(first.revision.files.map(f => f.path), [join(f.profile, 'AGENTS.md'), f.spec, f.plan], 'archive order matches injection order');
     const unchanged = f.prepare(); assert.deepEqual(unchanged, first);
     utimesSync(f.plan, new Date(), new Date(Date.now() + 10000)); assert.deepEqual(f.prepare(), first);
@@ -49,6 +49,7 @@ test('two full blocks, stable requests, moves without new contents, block-indepe
     const contents = readdirSync(join(f.profile, 'guidance', 'contents'));
     assert.match(f.pins.pin('PLAN.md', 'pre-memory', 'plan', 'Active work'), /Moved .* from post-memory to pre-memory/);
     const moved = f.prepare();
+    assert.equal(full(updates(moved.messages).slice(-1)), `<guidance_update>\nMoved ${f.plan} from post-memory to pre-memory.\n</guidance_update>`, 'a placement-only move has no content-change boilerplate or archive links');
     assert.equal(full(moved.messages).split('PLAN_FULL').length - 1, 1);
     assert.ok(full(moved.messages).indexOf('PLAN_FULL') < full(moved.messages).indexOf('MEMORY'));
     assert.deepEqual(readdirSync(join(f.profile, 'guidance', 'contents')), contents, 'placement does not duplicate archived contents');
@@ -56,7 +57,7 @@ test('two full blocks, stable requests, moves without new contents, block-indepe
     f.pins.unpin('PLAN.md'); const removed = f.prepare();
     assert.equal(removed.messages[0].role, 'system');
     assert.doesNotMatch(getSystemMessageText(removed.messages[0]), /PLAN_FULL/);
-    assert.match(full(removed.messages), /does not mean deletion or revoked requirements/);
+    assert.match(full(removed.messages), /requirements are not revoked/);
     rmSync(f.plan);
     const old = new GuidanceRequests(f.profile).describe([ref]);
     assert.ok(old.includes(f.plan) && old.includes('pre-memory; plan'));
@@ -110,9 +111,9 @@ test('edited, missing, unsupported and oversized files produce truthful recovera
     writeFileSync(f.spec, 'SPEC_V2: use the new protocol.');
     const changed = f.prepare();
     assert.match(full(changed.messages), /SPEC_V2/);
-    assert.match(full(updates(changed.messages)), /previous excerpt.*SPEC_FULL.*current excerpt.*SPEC_V2/);
-    assert.match(full(updates(changed.messages)), /no manual reread/);
-    assert.match(full(updates(changed.messages)), /earlier instructions, requirements or plans/);
+    assert.match(full(updates(changed.messages)), /excerpts.*SPEC_FULL.*→.*SPEC_V2/);
+    assert.match(full(updates(changed.messages)), /Updated contents are supplied for this step/);
+    assert.match(full(updates(changed.messages)), /Applies from this step onward; the change alone does not imply earlier work was wrong/);
     assert.ok(full(updates(changed.messages)).includes(initial.revision.files.find(p => p.path === f.spec)!.archive));
     assert.deepEqual(f.prepare(), changed);
     rmSync(f.plan); const missing = f.prepare();

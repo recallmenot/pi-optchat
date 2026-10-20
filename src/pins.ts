@@ -143,11 +143,11 @@ const unpinParameters = Type.Object({ path: Type.String(), scope: Type.Optional(
 const answer = (text: string) => ({ content: [{ type: 'text' as const, text }], details: {} });
 export function pinTools(current: (ctx: ExtensionContext) => Pins) {
   return [{ name: 'pin_file', label: 'Pin important context',
-    description: 'Keep an important specification, plan or reference fully available across refreshes. Use sparingly. Choose pre-memory for stable files, post-memory for frequent edits. Pinning sets no new instruction priority. Task scope (default) follows this task and same-project descendants; project scope is shared in this worktree across sessions. Registering in the other block moves the file. Keep pins while needed, then unpin_file.',
+    description: 'Keep a file fully available across refreshes. Choose pre-memory for stable files, post-memory for frequent edits. Task scope (default) follows this task and same-project descendants; project scope is shared in this worktree across sessions. Task overrides affect only that task and its descendants. Registering in the other block moves the file; repeating a registration creates no duplicate.',
     parameters: pinParameters,
     execute: async (_id: string, args: Static<typeof pinParameters>, _signal: AbortSignal | undefined, _update: unknown, ctx: ExtensionContext) => answer(current(ctx).pin(args.path, args.block, args.kind, args.purpose, args.scope)),
   }, { name: 'unpin_file', label: 'Release pinned context',
-    description: 'Stop including a file, from either block. Default task scope also hides an inherited pin for this task and its descendants; project scope removes the shared registration. Historical copies remain. Unpin when no longer needed; this does not revoke requirements.',
+    description: 'Stop including a file from either block; no block argument is needed. Default task scope also hides an inherited pin for this task and its descendants; project scope removes the shared registration. The file and historical copies remain; requirements are not revoked.',
     parameters: unpinParameters,
     execute: async (_id: string, args: Static<typeof unpinParameters>, _signal: AbortSignal | undefined, _update: unknown, ctx: ExtensionContext) => answer(current(ctx).unpin(args.path, args.scope)),
   }, { name: 'pinned_files', label: 'List pinned context', description: 'List automatic and effective registered files, placements, purposes, scopes and read problems for this project/task. Current inclusion status is also supplied in the pinned-file blocks.',

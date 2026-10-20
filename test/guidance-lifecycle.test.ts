@@ -85,7 +85,7 @@ test('main requests refresh guidance after tools, report wake, memory refresh an
     await session!.sendCustomMessage({ customType: REPORT_TYPE, content: '[child] Finished.', display: true }, { triggerTurn: true, deliverAs: 'steer' });
     await session!.agent.waitForIdle();
     assert.match(system(captured.at(-1)!), /Use PostgreSQL with migrations/);
-    assert.match(JSON.stringify(notices(captured.at(-1)!)), /previous excerpt.*Use PostgreSQL/);
+    assert.match(JSON.stringify(notices(captured.at(-1)!)), /excerpts.*Use PostgreSQL/);
     const file = manager.getSessionFile()!;
     await session!.extensionRunner.emit({ type: 'session_shutdown', reason: 'quit' }); session!.dispose(); session = undefined;
     await open(SessionManager.open(file));

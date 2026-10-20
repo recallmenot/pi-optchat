@@ -71,7 +71,7 @@ test('real main-agent tools pin full files across refresh/restart, move them, an
     assert.match(full(captured[2]), /UNIQUE_PLAN_V1/);
     assert.ok(full(captured[2]).indexOf('</chat>') < full(captured[2]).indexOf('UNIQUE_PLAN_V1'));
     assert.ok(full(captured[2]).indexOf('UNIQUE_PLAN_V1') < full(captured[2]).indexOf('Implement the system.'));
-    assert.match(full(captured[3]), /previous excerpt.*UNIQUE_PLAN_V1.*current excerpt.*UNIQUE_PLAN_V2/);
+    assert.match(full(captured[3]), /excerpts.*UNIQUE_PLAN_V1.*→.*UNIQUE_PLAN_V2/);
     assert.ok(captured.some(c => full(c).includes(TURN_REFRESHED)), 'memory actually refreshed while both files were pinned');
     for (const c of captured.slice(3)) { assert.match(system(c), /UNIQUE_SPEC_BODY/); assert.match(full(c), /UNIQUE_PLAN_V2/); }
     const file = manager.getSessionFile()!;
@@ -126,7 +126,7 @@ test('parallel project children inherit only relevant pins, refresh their own re
     const alphaCalls = captured.filter(c => system(c).includes('ALPHA_SPEC')), betaCalls = captured.filter(c => system(c).includes('BETA_SPEC'));
     assert.equal(alphaCalls.length, 2); assert.equal(betaCalls.length, 1);
     assert.match(full(alphaCalls[0]), /ALPHA_TASK_PLAN/); assert.match(system(alphaCalls[1]), /ALPHA_SPEC_V2/);
-    assert.match(full(alphaCalls[1]), /previous excerpt.*ALPHA_SPEC_V1/);
+    assert.match(full(alphaCalls[1]), /excerpts.*ALPHA_SPEC_V1/);
     assert.doesNotMatch(full(betaCalls[0]), /ALPHA_SPEC|ALPHA_TASK_PLAN/); assert.doesNotMatch(full(alphaCalls[0]), /BETA_SPEC/);
     await children.tell(id, 'Continue after restart.'); await settle();
     assert.match(full(captured.at(-1)!), /ALPHA_TASK_PLAN/);

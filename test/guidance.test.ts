@@ -42,9 +42,10 @@ test('one complete revision per request, exact previous copy, stable unchanged r
     assert.match(text(changed.messages[0] ? [changed.messages[0]] : []), /Use PostgreSQL/);
     assert.doesNotMatch(text([changed.messages[0]]), /Use SQLite/);
     const notice = text(changed.messages.slice(2));
-    assert.match(notice, /previous excerpt.*SQLite.*current excerpt.*PostgreSQL/);
-    assert.match(notice, /already supplied.*no manual reread/);
-    assert.match(notice, /earlier instruction violation/);
+    assert.match(notice, /excerpts.*SQLite.*→.*PostgreSQL/);
+    assert.match(notice, /Updated contents are supplied for this step/);
+    assert.match(notice, /change alone does not imply earlier work was wrong/);
+    assert.ok(notice.includes(JSON.stringify(first.revision.files[0].supplied).slice(1, -1)), 'the concise notice retains the previous version');
     assert.equal(readFileSync(first.revision.files[0].archive, 'utf8'), 'Use SQLite.');
     assert.equal(snapshots().length, 2);
     assert.deepEqual(f.prepare(), changed);
