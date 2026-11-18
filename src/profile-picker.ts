@@ -38,7 +38,7 @@ export async function pickProfile(ctx: ExtensionContext, choices: string[]) {
     const current = preferredProfile(ctx), settings = `Default profile: ${current ?? 'automatic'}`;
     const selected = await ctx.ui.select('OptChat profile', [...choices, settings]);
     if (selected !== settings) return selected;
-    const clear = 'No saved default', name = await ctx.ui.select('Default for new interactive sessions (flags and OPTCHAT_PROFILE take precedence)', [...listProfiles(), clear]);
+    const clear = 'No saved default', name = await ctx.ui.select('Default for new interactive sessions (flags, project profiles and OPTCHAT_PROFILE take precedence)', [...listProfiles(), clear]);
     if (name === undefined) continue;
     try { saveDefaultProfile(name === clear ? undefined : name); }
     catch (error) { ctx.ui.notify(`Could not save the default profile: ${error instanceof Error ? error.message : String(error)}`, 'error'); }
